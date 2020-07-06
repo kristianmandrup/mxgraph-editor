@@ -9,3 +9,4 @@ export * from "./EditorUI";
 export * from "./Factory";
 export * from "./PageConfig";
 export * from "./Refresher";
+export * from "./ScrollbarsManager";

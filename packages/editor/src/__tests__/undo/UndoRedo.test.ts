@@ -1,5 +1,4 @@
-import { UndoRedo } from "../../";
-import { EditorUI } from "../../";
+import { EditorUI, UndoRedo } from "../../";
 
 describe("UndoRedo", () => {
   const editor = {};
