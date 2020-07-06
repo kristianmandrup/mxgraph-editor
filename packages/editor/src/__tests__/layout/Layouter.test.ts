@@ -2,9 +2,12 @@ import { Layouter } from "../../";
 import { EditorUI } from "../../";
 
 describe("Layouter", () => {
+  const editor = {};
+  const container = document.createElement("div");
+
   let dialog, ui;
   beforeEach(() => {
-    ui = new EditorUI();
+    ui = new EditorUI(editor, container);
     dialog = new Layouter(ui);
   });
 

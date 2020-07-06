@@ -1,9 +1,12 @@
 import { EditorUI, Splitter } from "../../";
 
 describe("Splitter", () => {
+  const editor = {};
+  const container = document.createElement("div");
+
   let dialog, ui;
   beforeEach(() => {
-    ui = new EditorUI();
+    ui = new EditorUI(editor, container);
     dialog = new Splitter(ui);
   });
 

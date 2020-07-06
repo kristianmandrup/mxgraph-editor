@@ -2,9 +2,12 @@ import { GraphExtracter } from "../../";
 import { EditorUI } from "../../";
 
 describe("GraphExtracter", () => {
+  const editor = {};
+  const container = document.createElement("div");
+
   let dialog, ui;
   beforeEach(() => {
-    ui = new EditorUI();
+    ui = new EditorUI(editor, container);
     dialog = new GraphExtracter(ui);
   });
 

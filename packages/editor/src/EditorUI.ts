@@ -89,9 +89,15 @@ export class EditorUI {
   splitter: Splitter;
   pageConfig: PageConfig;
 
-  constructor() {
+  constructor(editor, container) {
+    this.editor = editor;
+    this.container = container;
+
     this.factory = new Factory();
     this.dialogFactory = new DialogsFactory(this);
+    this.dialogManager = new DialogManager(this);
+
+    // TODO: put in a dialogMap
     this.colorDialog = new ColorDialog(this);
     this.errorDialog = new ErrorDialog(this);
     this.openFileDialog = new OpenFileDialog(this);
@@ -99,12 +105,10 @@ export class EditorUI {
     this.linkDialog = new LinkDialog(this);
     this.editDataDialog = new EditDataDialog(this);
     this.backgroundImageDialog = new BackgroundImageDialog(this);
+
     this.uiDisplay = new UiDisplay(this);
     this.layouter = new Layouter(this);
-
     this.graphExtracter = new GraphExtracter(this);
-
-    this.dialogManager = new DialogManager(this);
     this.undoRedo = new UndoRedo(this);
     this.splitter = new Splitter(this);
     this.pageConfig = new PageConfig(this);

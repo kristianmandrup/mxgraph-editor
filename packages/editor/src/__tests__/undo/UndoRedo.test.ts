@@ -2,9 +2,12 @@ import { UndoRedo } from "../../";
 import { EditorUI } from "../../";
 
 describe("UndoRedo", () => {
+  const editor = {};
+  const container = document.createElement("div");
+
   let dialog, ui;
   beforeEach(() => {
-    ui = new EditorUI();
+    ui = new EditorUI(editor, container);
     dialog = new UndoRedo(ui);
   });
 
