@@ -4,10 +4,20 @@ import { Factory } from "./Factory";
 import { DialogsFactory } from "./dialogs/DialogsFactory";
 import { ColorDialog } from "./dialogs/ColorDialog";
 import { ErrorDialog } from "./dialogs/ErrorDialog";
+import { DialogManager } from "./dialogs/DialogManager";
+import { UndoRedo } from "./undo/UndoRedo";
+import { Splitter } from "./splitter";
+import { PageConfig } from "./PageConfig";
+import { OpenFileDialog } from "./dialogs/OpenFileDialog";
+import { ImageDialog } from "./dialogs";
+import { LinkDialog } from "./dialogs/LinkDialog";
+import { EditDataDialog } from "./dialogs/EditDataDialog";
+import { BackgroundImageDialog } from "./dialogs/BackgroundImageDialog";
+import { UiDisplay } from "./ui";
+import { GraphExtracter } from "./extract";
+import { Layouter } from "./layout";
 const {
   mxOutline,
-  mxMorphing,
-  mxImage,
   mxClient,
   mxRectangle,
   mxEventObject,
@@ -15,11 +25,9 @@ const {
   mxEvent,
   mxUtils,
   mxResources,
-  mxPopupMenu,
-  mxXmlRequest,
 } = mx;
 
-const { urlParams, SAVE_URL, MAX_REQUEST_SIZE } = resources;
+const { urlParams } = resources;
 
 const Graph: any = {};
 const Editor: any = {};
@@ -66,12 +74,40 @@ export class EditorUI {
 
   colorDialog: ColorDialog;
   errorDialog: ErrorDialog;
+  openFileDialog: OpenFileDialog;
+  imageDialog: ImageDialog;
+  linkDialog: LinkDialog;
+  editDataDialog: EditDataDialog;
+  backgroundImageDialog: BackgroundImageDialog;
+  graphExtracter: GraphExtracter;
+
+  uiDisplay: UiDisplay;
+  layouter: Layouter;
+
+  dialogManager: DialogManager;
+  undoRedo: UndoRedo;
+  splitter: Splitter;
+  pageConfig: PageConfig;
 
   constructor() {
     this.factory = new Factory();
     this.dialogFactory = new DialogsFactory(this);
     this.colorDialog = new ColorDialog(this);
     this.errorDialog = new ErrorDialog(this);
+    this.openFileDialog = new OpenFileDialog(this);
+    this.imageDialog = new ImageDialog(this);
+    this.linkDialog = new LinkDialog(this);
+    this.editDataDialog = new EditDataDialog(this);
+    this.backgroundImageDialog = new BackgroundImageDialog(this);
+    this.uiDisplay = new UiDisplay(this);
+    this.layouter = new Layouter(this);
+
+    this.graphExtracter = new GraphExtracter(this);
+
+    this.dialogManager = new DialogManager(this);
+    this.undoRedo = new UndoRedo(this);
+    this.splitter = new Splitter(this);
+    this.pageConfig = new PageConfig(this);
   }
 
   refresh() {
@@ -204,29 +240,14 @@ export class EditorUI {
    * Loads the stylesheet for this graph.
    */
   setPageFormat(value) {
-    this.editor.graph.pageFormat = value;
-    if (!this.editor.graph.pageVisible) {
-      this.actions.get("pageView").funct();
-    } else {
-      this.editor.graph.view.validateBackground();
-      this.editor.graph.sizeDidChange();
-    }
-    this.fireEvent(new mxEventObject("pageFormatChanged"));
+    this.pageConfig.setPageFormat(value);
   }
 
   /**
    * Loads the stylesheet for this graph.
    */
   setPageScale(value) {
-    this.editor.graph.pageScale = value;
-
-    if (!this.editor.graph.pageVisible) {
-      this.actions.get("pageView").funct();
-    } else {
-      this.editor.graph.view.validateBackground();
-      this.editor.graph.sizeDidChange();
-    }
-    this.fireEvent(new mxEventObject("pageScaleChanged"));
+    this.pageConfig.setPageScale(value);
   }
 
   /**
@@ -242,37 +263,7 @@ export class EditorUI {
    * Updates the states of the given undo/redo items.
    */
   addUndoListener() {
-    var undo = this.actions.get("undo");
-    var redo = this.actions.get("redo");
-
-    var undoMgr = this.editor.undoManager;
-    var undoListener = () => {
-      undo.setEnabled(this.canUndo());
-      redo.setEnabled(this.canRedo());
-    };
-
-    undoMgr.addListener(mxEvent.ADD, undoListener);
-    undoMgr.addListener(mxEvent.UNDO, undoListener);
-    undoMgr.addListener(mxEvent.REDO, undoListener);
-    undoMgr.addListener(mxEvent.CLEAR, undoListener);
-
-    // Overrides cell editor to update action states
-    var cellEditorStartEditing = this.editor.graph.cellEditor.startEditing;
-
-    this.editor.graph.cellEditor.startEditing = () => {
-      cellEditorStartEditing.apply(this, arguments);
-      undoListener();
-    };
-
-    var cellEditorStopEditing = this.editor.graph.cellEditor.stopEditing;
-
-    this.editor.graph.cellEditor.stopEditing = (_cell, _trigger) => {
-      cellEditorStopEditing.apply(this, arguments);
-      undoListener();
-    };
-
-    // Updates the button states once
-    undoListener();
+    this.undoRedo.addUndoListener();
   }
 
   zeroOffset = new mxPoint(0, 0);
@@ -284,52 +275,8 @@ export class EditorUI {
   /**
    * Creates the required containers.
    */
-  createTabContainer() {
-    return null;
-  }
-
-  /**
-   * Creates the required containers.
-   */
   createDivs() {
-    this.menubarContainer = this.createDiv("geMenubarContainer");
-    this.toolbarContainer = this.createDiv("geToolbarContainer");
-    this.sidebarContainer = this.createDiv("geSidebarContainer");
-    this.formatContainer = this.createDiv(
-      "geSidebarContainer geFormatContainer"
-    );
-    this.diagramContainer = this.createDiv("geDiagramContainer");
-    this.footerContainer = this.createDiv("geFooterContainer");
-    this.hsplit = this.createDiv("geHsplit");
-    this.hsplit.setAttribute("title", mxResources.get("collapseExpand"));
-
-    // Sets static style for containers
-    this.menubarContainer.style.top = "0px";
-    this.menubarContainer.style.left = "0px";
-    this.menubarContainer.style.right = "0px";
-    this.toolbarContainer.style.left = "0px";
-    this.toolbarContainer.style.right = "0px";
-    this.sidebarContainer.style.left = "0px";
-    this.formatContainer.style.right = "0px";
-    this.formatContainer.style.zIndex = "1";
-    this.diagramContainer.style.right =
-      (this.format != null ? this.formatWidth : 0) + "px";
-    this.footerContainer.style.left = "0px";
-    this.footerContainer.style.right = "0px";
-    this.footerContainer.style.bottom = "0px";
-    this.footerContainer.style.zIndex = mxPopupMenu.prototype.zIndex - 2;
-    this.hsplit.style.width = this.splitSize + "px";
-    this.sidebarFooterContainer = this.createSidebarFooterContainer();
-
-    if (this.sidebarFooterContainer) {
-      this.sidebarFooterContainer.style.left = "0px";
-    }
-
-    if (!this.editor.chromeless) {
-      this.tabContainer = this.createTabContainer();
-    } else {
-      this.diagramContainer.style.border = "none";
-    }
+    this.uiDisplay.createDivs();
   }
 
   /**
@@ -343,227 +290,14 @@ export class EditorUI {
    * Creates the required containers.
    */
   createUi() {
-    // Creates menubar
-    this.menubar = this.editor.chromeless
-      ? null
-      : this.menus.createMenubar(this.createDiv("geMenubar"));
-
-    if (this.menubar != null) {
-      this.menubarContainer.appendChild(this.menubar.container);
-    }
-
-    // Adds status bar in menubar
-    if (this.menubar != null) {
-      this.statusContainer = this.createStatusContainer();
-
-      // Connects the status bar to the editor status
-      this.editor.addListener("statusChanged", () => {
-        this.setStatusText(this.editor.getStatus());
-      });
-
-      this.setStatusText(this.editor.getStatus());
-      this.menubar.container.appendChild(this.statusContainer);
-
-      // Inserts into DOM
-      this.container.appendChild(this.menubarContainer);
-    }
-
-    // Creates the sidebar
-    this.sidebar = this.editor.chromeless
-      ? null
-      : this.createSidebar(this.sidebarContainer);
-
-    if (this.sidebar != null) {
-      this.container.appendChild(this.sidebarContainer);
-    }
-
-    // Creates the format sidebar
-    this.format =
-      this.editor.chromeless || !this.formatEnabled
-        ? null
-        : this.createFormat(this.formatContainer);
-
-    if (this.format != null) {
-      this.container.appendChild(this.formatContainer);
-    }
-
-    // Creates the footer
-    var footer = this.editor.chromeless ? null : this.createFooter();
-
-    if (footer != null) {
-      this.footerContainer.appendChild(footer);
-      this.container.appendChild(this.footerContainer);
-    }
-
-    if (this.sidebar != null && this.sidebarFooterContainer) {
-      this.container.appendChild(this.sidebarFooterContainer);
-    }
-
-    this.container.appendChild(this.diagramContainer);
-
-    if (this.container != null && this.tabContainer != null) {
-      this.container.appendChild(this.tabContainer);
-    }
-
-    // Creates toolbar
-    this.toolbar = this.editor.chromeless
-      ? null
-      : this.createToolbar(this.createDiv("geToolbar"));
-
-    if (this.toolbar != null) {
-      this.toolbarContainer.appendChild(this.toolbar.container);
-      this.container.appendChild(this.toolbarContainer);
-    }
-
-    // HSplit
-    if (this.sidebar != null) {
-      this.container.appendChild(this.hsplit);
-
-      this.addSplitHandler(this.hsplit, true, 0, (value) => {
-        this.hsplitPosition = value;
-        this.refresh();
-      });
-    }
-  }
-
-  /**
-   * Creates a new toolbar for the given container.
-   */
-  createStatusContainer() {
-    var container = document.createElement("a");
-    container.className = "geItem geStatus";
-
-    if (screen.width < 420) {
-      container.style.maxWidth = Math.max(20, screen.width - 320) + "px";
-      container.style.overflow = "hidden";
-    }
-
-    return container;
-  }
-
-  /**
-   * Creates a new toolbar for the given container.
-   */
-  setStatusText(value) {
-    this.statusContainer.innerHTML = value;
-  }
-
-  /**
-   * Creates a new toolbar for the given container.
-   */
-  createToolbar(container) {
-    return this.factory.createToolbar(container);
-    // new Toolbar(this, container);
-  }
-
-  /**
-   * Creates a new sidebar for the given container.
-   */
-  createSidebar(container) {
-    return this.factory.createSidebar(container);
-    // return new Sidebar(this, container);
-  }
-
-  /**
-   * Creates a new sidebar for the given container.
-   */
-  createFormat(container) {
-    return this.factory.createFormat(container);
-    // return new Format(this, container);
-  }
-
-  /**
-   * Creates and returns a new footer.
-   */
-  createFooter() {
-    return this.createDiv("geFooter");
-  }
-
-  /**
-   * Creates the actual toolbar for the toolbar container.
-   */
-  createDiv(classname) {
-    var elt = document.createElement("div");
-    elt.className = classname;
-
-    return elt;
+    this.uiDisplay.createUi();
   }
 
   /**
    * Updates the states of the given undo/redo items.
    */
   addSplitHandler(elt, horizontal, dx, onChange) {
-    var start: any;
-    var initial: any;
-    var ignoreClick: any;
-    var last: any;
-
-    // Disables built-in pan and zoom in IE10 and later
-    if (mxClient.IS_POINTER) {
-      elt.style.touchAction = "none";
-    }
-
-    var getValue = () => {
-      var result = parseInt(horizontal ? elt.style.left : elt.style.bottom);
-
-      // Takes into account hidden footer
-      if (!horizontal) {
-        result = result + dx - this.footerHeight;
-      }
-
-      return result;
-    };
-
-    const moveHandler = (evt) => {
-      if (start != null) {
-        var pt = new mxPoint(mxEvent.getClientX(evt), mxEvent.getClientY(evt));
-        onChange(
-          Math.max(
-            0,
-            initial + (horizontal ? pt.x - start.x : start.y - pt.y) - dx
-          )
-        );
-        mxEvent.consume(evt);
-
-        if (initial != getValue()) {
-          ignoreClick = true;
-          last = null;
-        }
-      }
-    };
-
-    function dropHandler(evt) {
-      moveHandler(evt);
-      initial = null;
-      start = null;
-    }
-
-    mxEvent.addGestureListeners(
-      elt,
-      (evt) => {
-        start = new mxPoint(mxEvent.getClientX(evt), mxEvent.getClientY(evt));
-        initial = getValue();
-        ignoreClick = false;
-        mxEvent.consume(evt);
-      },
-      null,
-      null
-    );
-
-    mxEvent.addListener(elt, "click", (evt) => {
-      if (!ignoreClick && this.hsplitClickEnabled) {
-        var next = last != null ? last - dx : 0;
-        last = getValue();
-        onChange(next);
-        mxEvent.consume(evt);
-      }
-    });
-
-    mxEvent.addGestureListeners(document, null, moveHandler, dropHandler);
-
-    this.destroyFunctions.push(function () {
-      mxEvent.removeGestureListeners(document, null, moveHandler, dropHandler);
-    });
+    this.splitter.addSplitHandler(elt, horizontal, dx, onChange);
   }
 
   /**
@@ -615,7 +349,7 @@ export class EditorUI {
     // hide,
     // onClose
   ) {
-    this.errorDialog.displayError(opts);
+    this.errorDialog.displayErrorDialog(opts);
     // // const $btn = btn || mxResources.get("ok");
     // var dlg = this.dialogFactory.createErrorDialog(opts);
     // //   this, title, msg, $btn, {
@@ -678,39 +412,9 @@ export class EditorUI {
   }
 
   /**
-   * Displays a print dialog.
    */
   hideDialog(cancel, isEsc?) {
-    if (this.dialogs != null && this.dialogs.length > 0) {
-      var dlg = this.dialogs.pop();
-
-      if (dlg.close(cancel, isEsc) == false) {
-        //add the dialog back if dialog closing is cancelled
-        this.dialogs.push(dlg);
-        return;
-      }
-
-      this.dialog =
-        this.dialogs.length > 0 ? this.dialogs[this.dialogs.length - 1] : null;
-      this.editor.fireEvent(new mxEventObject("hideDialog"));
-
-      if (
-        this.dialog == null &&
-        this.editor.graph.container.style.visibility != "hidden"
-      ) {
-        window.setTimeout(() => {
-          if (
-            this.editor.graph.isEditing() &&
-            this.editor.graph.cellEditor.textarea != null
-          ) {
-            this.editor.graph.cellEditor.textarea.focus();
-          } else {
-            mxUtils.clearSelection();
-            this.editor.graph.container.focus();
-          }
-        }, 0);
-      }
-    }
+    this.dialogManager.hideDialog(cancel, isEsc);
   }
 
   get graph() {
@@ -732,104 +436,21 @@ export class EditorUI {
    * Adds the label menu items to the given menu and parent.
    */
   openFile() {
-    // Closes dialog after open
-    this.$openFile = new Openfile((cancel) => {
-      this.hideDialog(cancel);
-    });
-
-    // Removes openFile if dialog is closed
-    this.showDialog(
-      new OpenDialog(this).container,
-      Editor.useLocalStorage ? 640 : 320,
-      Editor.useLocalStorage ? 480 : 220,
-      true,
-      true,
-      () => {
-        this.$openFile = null;
-      },
-      null,
-      null
-    );
+    this.openFileDialog.openFile();
   }
 
   /**
    * Extracs the graph model from the given HTML data from a data transfer event.
    */
   extractGraphModelFromHtml(data) {
-    var result = null;
-
-    try {
-      var idx = data.indexOf("&lt;mxGraphModel ");
-
-      if (idx >= 0) {
-        var idx2 = data.lastIndexOf("&lt;/mxGraphModel&gt;");
-
-        if (idx2 > idx) {
-          result = data
-            .substring(idx, idx2 + 21)
-            .replace(/&gt;/g, ">")
-            .replace(/&lt;/g, "<")
-            .replace(/\\&quot;/g, '"')
-            .replace(/\n/g, "");
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-
-    return result;
+    return this.graphExtracter.extractGraphModelFromHtml(data);
   }
 
   /**
    * Opens the given files in the editor.
    */
   extractGraphModelFromEvent(evt) {
-    var result: any;
-    var data: any;
-
-    const { documentMode } = this;
-
-    if (evt != null) {
-      var provider =
-        evt.dataTransfer != null ? evt.dataTransfer : evt.clipboardData;
-
-      if (provider != null) {
-        if (documentMode == 10 || documentMode == 11) {
-          data = provider.getData("Text");
-        } else {
-          data =
-            mxUtils.indexOf(provider.types, "text/html") >= 0
-              ? provider.getData("text/html")
-              : null;
-
-          if (
-            mxUtils.indexOf(
-              provider.types,
-              "text/plain" && (data == null || data.length == 0)
-            )
-          ) {
-            data = provider.getData("text/plain");
-          }
-        }
-
-        if (data != null) {
-          data = Graph.zapGremlins(mxUtils.trim(data));
-
-          // Tries parsing as HTML document with embedded XML
-          var xml = this.extractGraphModelFromHtml(data);
-
-          if (xml != null) {
-            data = xml;
-          }
-        }
-      }
-    }
-
-    if (data != null && this.isCompatibleString(data)) {
-      result = data;
-    }
-
-    return result;
+    return this.graphExtracter.extractGraphModelFromEvent(evt);
   }
 
   /**
@@ -840,213 +461,43 @@ export class EditorUI {
     return false;
   }
 
-  /**
-   * Adds the label menu items to the given menu and parent.
-   */
-  saveFile(forceDialog) {
-    if (!forceDialog && this.editor.filename != null) {
-      this.save(this.editor.getOrCreateFilename());
-    } else {
-      var dlg = new FilenameDialog(
-        this,
-        this.editor.getOrCreateFilename(),
-        mxResources.get("save"),
-        (name) => {
-          this.save(name);
-        },
-        null,
-        (name) => {
-          if (name != null && name.length > 0) {
-            return true;
-          }
-
-          mxUtils.confirm(mxResources.get("invalidName"));
-
-          return false;
-        }
-      );
-      this.showDialog(dlg.container, 300, 100, true, true);
-      dlg.init();
-    }
-  }
-
-  /**
-   * Saves the current graph under the given filename.
-   */
-  save(name) {
-    if (name != null) {
-      if (this.editor.graph.isEditing()) {
-        this.editor.graph.stopEditing();
-      }
-
-      var xml = mxUtils.getXml(this.editor.getGraphXml());
-
-      try {
-        if (Editor.useLocalStorage) {
-          if (
-            localStorage.getItem(name) != null &&
-            !mxUtils.confirm(mxResources.get("replaceIt", [name]))
-          ) {
-            return;
-          }
-
-          localStorage.setItem(name, xml);
-          this.editor.setStatus(
-            mxUtils.htmlEntities(mxResources.get("saved")) + " " + new Date()
-          );
-        } else {
-          if (xml.length < MAX_REQUEST_SIZE) {
-            const req = new mxXmlRequest(
-              SAVE_URL,
-              "filename=" +
-                encodeURIComponent(name) +
-                "&xml=" +
-                encodeURIComponent(xml),
-              null,
-              null,
-              null,
-              null
-            );
-            req.simulate(document, "_blank");
-          } else {
-            mxUtils.alert(mxResources.get("drawingTooLarge"));
-            mxUtils.popup(xml);
-
-            return;
-          }
-        }
-
-        this.editor.setModified(false);
-        this.editor.setFilename(name);
-        this.updateDocumentTitle();
-      } catch (e) {
-        this.editor.setStatus(
-          mxUtils.htmlEntities(mxResources.get("errorSavingFile"))
-        );
-      }
-    }
+  showFileNameDialog() {
+    this.openFileDialog.openFile();
   }
 
   /**
    * Executes the given layout.
    */
   executeLayout(exec, animate, post) {
-    var graph = this.editor.graph;
-
-    if (graph.isEnabled()) {
-      graph.getModel().beginUpdate();
-      try {
-        exec();
-      } catch (e) {
-        throw e;
-      } finally {
-        // Animates the changes in the graph model except
-        // for Camino, where animation is too slow
-        if (
-          this.allowAnimation &&
-          animate &&
-          (navigator.userAgent == null ||
-            navigator.userAgent.indexOf("Camino") < 0)
-        ) {
-          // New API for animating graph layout results asynchronously
-          var morph = new mxMorphing(graph);
-          morph.addListener(mxEvent.DONE, () => {
-            graph.getModel().endUpdate();
-
-            if (post != null) {
-              post();
-            }
-          });
-
-          morph.startAnimation();
-        } else {
-          graph.getModel().endUpdate();
-
-          if (post != null) {
-            post();
-          }
-        }
-      }
-    }
+    this.layouter.executeLayout(exec, animate, post);
   }
 
   /**
    * Hides the current menu.
    */
   showImageDialog(title, value, fn, _ignoreExisting) {
-    var cellEditor = this.editor.graph.cellEditor;
-    var selState = cellEditor.saveSelection();
-    var newValue = mxUtils.prompt(title, value);
-    cellEditor.restoreSelection(selState);
-
-    if (newValue != null && newValue.length > 0) {
-      var img = new Image();
-
-      img.onload = function () {
-        fn(newValue, img.width, img.height);
-      };
-      img.onerror = function () {
-        fn(null);
-        mxUtils.alert(mxResources.get("fileNotFound"));
-      };
-
-      img.src = newValue;
-    } else {
-      fn(null);
-    }
+    this.imageDialog.showImageDialog(title, value, fn, _ignoreExisting);
   }
 
   /**
    * Hides the current menu.
    */
   showLinkDialog(value, btnLabel, fn) {
-    var dlg = new LinkDialog(this, value, btnLabel, fn);
-    this.showDialog(dlg.container, 420, 90, true, true);
-    dlg.init();
+    this.linkDialog.showLinkDialog(value, btnLabel, fn);
   }
 
   /**
    * Hides the current menu.
    */
   showDataDialog(cell) {
-    if (cell != null) {
-      var dlg = new EditDataDialog(this, cell);
-      this.showDialog(dlg.container, 480, 420, true, false, null, false);
-      dlg.init();
-    }
+    this.editDataDialog.showDataDialog(cell);
   }
 
   /**
    * Hides the current menu.
    */
   showBackgroundImageDialog(apply) {
-    apply =
-      apply != null
-        ? apply
-        : (image) => {
-            var change = new ChangePageSetup(this, null, image);
-            change.ignoreColor = true;
-
-            this.editor.graph.model.execute(change);
-          };
-
-    var newValue = mxUtils.prompt(mxResources.get("backgroundImage"), "");
-
-    if (newValue != null && newValue.length > 0) {
-      var img = new Image();
-
-      img.onload = function () {
-        apply(new mxImage(newValue, img.width, img.height));
-      };
-      img.onerror = function () {
-        apply(null);
-        mxUtils.alert(mxResources.get("fileNotFound"));
-      };
-
-      img.src = newValue;
-    } else {
-      apply(null);
-    }
+    this.backgroundImageDialog.showBackgroundImageDialog(apply);
   }
 
   /**
@@ -1189,20 +640,6 @@ export class EditorUI {
         c[i].parentNode.removeChild(c[i]);
       }
     }
-  }
-
-  /**
-   * Returns the URL for a copy of this editor with no state.
-   */
-  canRedo() {
-    return this.editor.graph.isEditing() || this.editor.undoManager.canRedo();
-  }
-
-  /**
-   * Returns the URL for a copy of this editor with no state.
-   */
-  canUndo() {
-    return this.editor.graph.isEditing() || this.editor.undoManager.canUndo();
   }
 
   /**

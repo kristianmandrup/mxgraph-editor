@@ -59,8 +59,8 @@ export class DialogsFactory {
     return new FilenameDialog(this, opts);
   }
 
-  createOpenfile(opts): any {
+  createOpenfile(fn): any {
     const { Openfile } = this.classMap;
-    return new Openfile(this, opts);
+    return new Openfile(fn);
   }
 }

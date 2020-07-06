@@ -1,5 +1,4 @@
 import { BaseDialog } from "./BaseDialog";
-import { DialogsFactory } from "./DialogsFactory";
 
 export class ColorDialog extends BaseDialog {
   ui: any;
@@ -26,7 +25,7 @@ export class ColorDialog extends BaseDialog {
     return [];
   }
 
-  get colorDialogHeight() {
+  get height() {
     return (
       226 +
       (Math.ceil(this.presetColors.length / 12) +
@@ -35,20 +34,18 @@ export class ColorDialog extends BaseDialog {
     );
   }
 
-  get colorDialogSize() {
+  get size() {
     return {
-      width: this.colorDialogWidth,
-      height: this.colorDialogHeight,
+      width: this.width,
+      height: this.height,
     };
   }
 
-  get colorDialogWidth() {
-    return 230;
-  }
+  width = 230;
 
   createColorDialog(opts: any = {}) {
     let { color, apply } = opts;
-    const { width, height } = this.colorDialogSize;
+    const { width, height } = this.size;
     const { graph, selState } = this;
     const applyColor = (color) => {
       const { selState } = this;
@@ -74,7 +71,7 @@ export class ColorDialog extends BaseDialog {
    * Display a color dialog.
    */
   pickColor(color, apply) {
-    const { width, height } = this.colorDialogSize;
+    const { width, height } = this.size;
     var dlg = this.createColorDialog({ color, apply });
     const container = dlg.container;
     const modal = true;

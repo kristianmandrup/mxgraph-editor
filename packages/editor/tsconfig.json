@@ -11,24 +11,6 @@
     },
     {
       "path": "../resources"
-    },
-    {
-      "path": "../dialogs"
-    },
-    {
-      "path": "../menus"
-    },
-    {
-      "path": "../format"
-    },
-    {
-      "path": "../graph"
-    },
-    {
-      "path": "../toolbar"
-    },
-    {
-      "path": "../sidebar"
     }
   ]
 }
