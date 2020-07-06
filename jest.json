@@ -1,0 +1,18 @@
+{
+  "setupFiles": ["jest-canvas-mock"],
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx"],
+  "transform": {
+    "\\.jsx?$": "babel-jest",
+    "\\.tsx?$": "ts-jest"
+  },
+  "testMatch": ["**/__tests__/**/*.test.*"],
+  "testPathIgnorePatterns": ["__snapshots__"],
+  "globals": {
+    "ts-jest": {
+      "tsConfig": "tsconfig.json"
+    }
+  },
+  "moduleNameMapper": {
+    "@stereobooster/(.*)$": "<rootDir>/packages/$1"
+  }
+}
