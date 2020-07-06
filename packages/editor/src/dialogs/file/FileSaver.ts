@@ -29,8 +29,9 @@ export class FileSaver {
    * Adds the label menu items to the given menu and parent.
    */
   saveFile(forceDialog) {
-    if (!forceDialog && this.editor.filename != null) {
-      this.save(this.editor.getOrCreateFilename());
+    const { getOrCreateFilename, filename } = this.editor;
+    if (!forceDialog && filename != null) {
+      this.save(getOrCreateFilename());
     } else {
     }
   }

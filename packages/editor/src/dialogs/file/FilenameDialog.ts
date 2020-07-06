@@ -2,7 +2,7 @@ import { BaseDialog } from "../BaseDialog";
 import mx from "@mxgraph-app/mx";
 const { mxUtils, mxResources } = mx;
 
-export class OpenFileDialog extends BaseDialog {
+export class FilenameDialog extends BaseDialog {
   ui: any;
   graph: any;
   dialogFactory: any;

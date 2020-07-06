@@ -30,7 +30,7 @@ describe("OpenFileDialog", () => {
 
       describe("height", () => {
         it("is set", () => {
-          expect(dialog.width).toEqual(220);
+          expect(dialog.height).toEqual(220);
         });
       });
     });
@@ -49,8 +49,8 @@ describe("OpenFileDialog", () => {
       });
 
       describe("openFile()", () => {
-        it("is set", () => {
-          expect(dialog.openFile()).toBeDefined();
+        it("no throw", () => {
+          expect(() => dialog.openFile()).not.toThrow();
         });
       });
     });

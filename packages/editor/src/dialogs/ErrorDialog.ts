@@ -9,6 +9,9 @@ export class ErrorDialog extends BaseDialog {
     return Math.ceil(msg != null ? msg.length / 50 : 1);
   }
 
+  width = 340;
+  baseHeight = 100;
+
   displayErrorDialog(opts) {
     let { msg, width, height, onClose } = opts;
     var dlg = this.dialogFactory.createErrorDialog(opts);
@@ -24,8 +27,8 @@ export class ErrorDialog extends BaseDialog {
     const lineCount = this.linesFor(msg);
     const { container } = dlg;
     const linesHeight = lineCount * 20;
-    width = width || 340;
-    height = height || 100 + linesHeight;
+    width = width || this.width;
+    height = height || this.baseHeight + linesHeight;
     // true, false
     this.showDialog({ container, width, height, onClose });
     dlg.init();
