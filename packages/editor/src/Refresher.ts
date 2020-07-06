@@ -1,4 +1,4 @@
-import mx from "mx";
+import mx from "@mxgraph-app/mx";
 const { mxClient } = mx;
 
 export class Refresher {
@@ -31,16 +31,15 @@ export class Refresher {
    */
   refresh(sizeDidChange) {
     const { documentMode } = this;
-    sizeDidChange = (sizeDidChange != null) ? sizeDidChange : true;
+    sizeDidChange = sizeDidChange != null ? sizeDidChange : true;
 
-    var quirks = mxClient.IS_IE &&
-      (documentMode == null || documentMode == 5);
+    var quirks = mxClient.IS_IE && (documentMode == null || documentMode == 5);
     var w = this.container.clientWidth;
     var h = this.container.clientHeight;
 
     if (this.container == document.body) {
       w = document.body.clientWidth || document.documentElement.clientWidth;
-      h = (quirks)
+      h = quirks
         ? document.body.clientHeight || document.documentElement.clientHeight
         : document.documentElement.clientHeight;
     }
@@ -59,7 +58,7 @@ export class Refresher {
 
     var effHsplitPosition = Math.max(
       0,
-      Math.min(this.hsplitPosition, w - this.splitSize - 20),
+      Math.min(this.hsplitPosition, w - this.splitSize - 20)
     );
     var tmp = 0;
 
@@ -84,31 +83,30 @@ export class Refresher {
       var bottom = this.footerHeight + off;
       sidebarFooterHeight = Math.max(
         0,
-        Math.min(h - tmp - bottom, this.sidebarFooterHeight),
+        Math.min(h - tmp - bottom, this.sidebarFooterHeight)
       );
       this.sidebarFooterContainer.style.width = effHsplitPosition + "px";
       this.sidebarFooterContainer.style.height = sidebarFooterHeight + "px";
       this.sidebarFooterContainer.style.bottom = bottom + "px";
     }
 
-    var fw = (this.format != null) ? this.formatWidth : 0;
+    var fw = this.format != null ? this.formatWidth : 0;
     this.sidebarContainer.style.top = tmp + "px";
     this.sidebarContainer.style.width = effHsplitPosition + "px";
     this.formatContainer.style.top = tmp + "px";
     this.formatContainer.style.width = fw + "px";
-    this.formatContainer.style.display = (this.format != null) ? "" : "none";
+    this.formatContainer.style.display = this.format != null ? "" : "none";
 
     var diagContOffset = this.getDiagramContainerOffset();
-    var contLeft = (this.hsplit.parentNode != null)
-      ? (effHsplitPosition + this.splitSize)
-      : 0;
-    this.diagramContainer.style.left = (contLeft + diagContOffset.x) + "px";
-    this.diagramContainer.style.top = (tmp + diagContOffset.y) + "px";
+    var contLeft =
+      this.hsplit.parentNode != null ? effHsplitPosition + this.splitSize : 0;
+    this.diagramContainer.style.left = contLeft + diagContOffset.x + "px";
+    this.diagramContainer.style.top = tmp + diagContOffset.y + "px";
     this.footerContainer.style.height = this.footerHeight + "px";
     this.hsplit.style.top = this.sidebarContainer.style.top;
-    this.hsplit.style.bottom = (this.footerHeight + off) + "px";
+    this.hsplit.style.bottom = this.footerHeight + off + "px";
     this.hsplit.style.left = effHsplitPosition + "px";
-    this.footerContainer.style.display = (this.footerHeight == 0) ? "none" : "";
+    this.footerContainer.style.display = this.footerHeight == 0 ? "none" : "";
 
     if (this.tabContainer != null) {
       this.tabContainer.style.left = contLeft + "px";
@@ -119,23 +117,24 @@ export class Refresher {
       this.toolbarContainer.style.width = this.menubarContainer.style.width;
       var sidebarHeight = Math.max(
         0,
-        h - this.footerHeight - this.menubarHeight - this.toolbarHeight,
+        h - this.footerHeight - this.menubarHeight - this.toolbarHeight
       );
       this.sidebarContainer.style.height =
-        (sidebarHeight - sidebarFooterHeight) + "px";
+        sidebarHeight - sidebarFooterHeight + "px";
       this.formatContainer.style.height = sidebarHeight + "px";
-      this.diagramContainer.style.width = (this.hsplit.parentNode != null)
-        ? Math.max(0, w - effHsplitPosition - this.splitSize - fw) + "px"
-        : w + "px";
+      this.diagramContainer.style.width =
+        this.hsplit.parentNode != null
+          ? Math.max(0, w - effHsplitPosition - this.splitSize - fw) + "px"
+          : w + "px";
       this.footerContainer.style.width = this.menubarContainer.style.width;
       var diagramHeight = Math.max(
         0,
-        h - this.footerHeight - this.menubarHeight - this.toolbarHeight,
+        h - this.footerHeight - this.menubarHeight - this.toolbarHeight
       );
 
       if (this.tabContainer != null) {
         this.tabContainer.style.width = this.diagramContainer.style.width;
-        this.tabContainer.style.bottom = (this.footerHeight + off) + "px";
+        this.tabContainer.style.bottom = this.footerHeight + off + "px";
         diagramHeight -= this.tabContainer.clientHeight;
       }
 
@@ -150,16 +149,15 @@ export class Refresher {
       var th = 0;
 
       if (this.tabContainer != null) {
-        this.tabContainer.style.bottom = (this.footerHeight + off) + "px";
+        this.tabContainer.style.bottom = this.footerHeight + off + "px";
         this.tabContainer.style.right = this.diagramContainer.style.right;
         th = this.tabContainer.clientHeight;
       }
 
       this.sidebarContainer.style.bottom =
-        (this.footerHeight + sidebarFooterHeight + off) + "px";
-      this.formatContainer.style.bottom = (this.footerHeight + off) + "px";
-      this.diagramContainer.style.bottom = (this.footerHeight + off + th) +
-        "px";
+        this.footerHeight + sidebarFooterHeight + off + "px";
+      this.formatContainer.style.bottom = this.footerHeight + off + "px";
+      this.diagramContainer.style.bottom = this.footerHeight + off + th + "px";
     }
 
     if (sizeDidChange) {

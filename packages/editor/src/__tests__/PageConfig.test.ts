@@ -1,11 +1,10 @@
-import { UndoRedo } from "../../";
-import { EditorUI } from "../../";
+import { EditorUI, PageConfig } from "../";
 
-describe("UndoRedo", () => {
+describe("PageConfig", () => {
   let dialog, ui;
   beforeEach(() => {
     ui = new EditorUI();
-    dialog = new UndoRedo(ui);
+    dialog = new PageConfig(ui);
   });
 
   describe("instance", () => {
@@ -33,36 +32,20 @@ describe("UndoRedo", () => {
           expect(dialog.actions).toBeDefined();
         });
       });
-
-      describe("isEditing", () => {
-        it("is set", () => {
-          expect(dialog.isEditing).toBeDefined();
-        });
-      });
-
-      describe("undoManager", () => {
-        it("is set", () => {
-          expect(dialog.undoManager).toBeDefined();
-        });
-      });
     });
 
     describe("methods", () => {
-      describe("canRedo()", () => {
+      describe("setPageFormat(value)", () => {
+        const value = "x";
         it("no throw", () => {
-          expect(() => dialog.canRedo()).not.toThrow();
+          expect(() => dialog.setPageFormat(value)).not.toThrow();
         });
       });
 
-      describe("canUndo()", () => {
+      describe("setPageScale(value)", () => {
+        const value = "x";
         it("no throw", () => {
-          expect(() => dialog.canUndo()).not.toThrow();
-        });
-      });
-
-      describe("addUndoListener()", () => {
-        it("no throw", () => {
-          expect(() => dialog.addUndoListener()).not.toThrow();
+          expect(() => dialog.setPageScale(value)).not.toThrow();
         });
       });
     });
