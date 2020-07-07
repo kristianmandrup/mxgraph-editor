@@ -1,20 +1,12 @@
 import mx from "@mxgraph-app/mx";
 import { Images } from "./Images";
 import { UndoManagerFactory } from "./undo";
-const {
-  mxEventObject,
-  mxCodec,
-  mxRectangle,
-  mxGraph,
-  mxChildChange,
-  mxPoint,
-  mxEvent,
-  mxClient,
-  mxResources,
-  mxUtils,
-} = mx;
+import { EditorGraph } from "./graph/EditorGraph";
+import { Undo } from "./undo/Undo";
+import { NewEdit } from "./edit";
+const { mxPoint, mxEvent, mxClient, mxResources } = mx;
 
-const Graph: any = {};
+//const Graph: any = {};
 
 /**
  * Editor constructor executed on page load.
@@ -114,11 +106,6 @@ export class Editor {
   editBlankUrl: string =
     window.location.protocol + "//" + window.location.host + "/";
 
-  /**
-   * Default value for the graph container overflow style.
-   */
-  defaultGraphOverflow: string = "hidden";
-
   editable: boolean = true;
   graph: any;
   undoManager: any;
@@ -131,6 +118,9 @@ export class Editor {
   resizeListener: any;
 
   undoManagerFactory: UndoManagerFactory;
+  editorGraph: EditorGraph;
+  undo: Undo;
+  newEdit: NewEdit;
 
   constructor(chromeless, themes, model, graph, editable) {
     // mxEventSource.call(this);
@@ -139,9 +129,15 @@ export class Editor {
     this.graph = graph || this.createGraph(themes, model);
     this.editable = editable != null ? editable : !chromeless;
     this.undoManager = this.createUndoManager();
-
+    this.editorGraph = this.createEditorGraph();
     this.undoManagerFactory = this.createUndoManagerFactory();
+    this.undo = new Undo(this);
+    this.newEdit = new NewEdit(this);
     this.status = "";
+  }
+
+  createEditorGraph() {
+    return new EditorGraph(this);
   }
 
   createUndoManagerFactory() {
@@ -150,6 +146,11 @@ export class Editor {
 
   get urlParams(): any {
     return {};
+  }
+
+  // TODO
+  isExternalProtocol(_href): boolean {
+    return false;
   }
 
   getOrCreateFilename() {
@@ -255,264 +256,40 @@ export class Editor {
    *
    */
   editAsNew(xml, title) {
-    const { urlParams } = this;
-    var p = title != null ? "?title=" + encodeURIComponent(title) : "";
-
-    if (urlParams["ui"] != null) {
-      p += (p.length > 0 ? "&" : "?") + "ui=" + urlParams["ui"];
-    }
-
-    if (
-      typeof window.postMessage !== "undefined" &&
-      (this.documentMode == null || this.documentMode >= 10)
-    ) {
-      var wnd: any = null;
-
-      var l = (evt) => {
-        if (evt.data == "ready" && evt.source == wnd) {
-          mxEvent.removeListener(window, "message", l);
-          wnd.postMessage(xml, "*");
-        }
-      };
-
-      mxEvent.addListener(window, "message", l);
-      wnd = this.graph.openLink(
-        this.getEditBlankUrl(p + (p.length > 0 ? "&" : "?") + "client=1"),
-        null,
-        true
-      );
-    } else {
-      this.graph.openLink(
-        this.getEditBlankUrl(p) + "#R" + encodeURIComponent(xml)
-      );
-    }
+    this.newEdit.editAsNew(xml, title);
   }
 
   /**
    * Sets the XML node for the current diagram.
    */
-  createGraph(themes, model) {
-    var graph = new Graph(null, model, null, null, themes);
-    graph.transparentBackground = false;
-
-    // Opens all links in a new window while editing
-    if (!this.chromeless) {
-      graph.isBlankLink = function (href) {
-        return !this.isExternalProtocol(href);
-      };
-    }
-    return graph;
+  createGraph(themes, model): any {
+    return this.editorGraph.createGraph(themes, model);
   }
 
   /**
    * Sets the XML node for the current diagram.
    */
   resetGraph() {
-    const { urlParams } = this;
-    this.graph.gridEnabled =
-      !this.isChromelessView() || urlParams["grid"] == "1";
-    this.graph.graphHandler.guidesEnabled = true;
-    this.graph.setTooltips(true);
-    this.graph.setConnectable(true);
-    this.graph.foldingEnabled = true;
-    this.graph.scrollbars = this.graph.defaultScrollbars;
-    this.graph.pageVisible = this.graph.defaultPageVisible;
-    this.graph.pageBreaksVisible = this.graph.pageVisible;
-    this.graph.preferPageSize = this.graph.pageBreaksVisible;
-    this.graph.background = null;
-    this.graph.pageScale = mxGraph.prototype.pageScale;
-    this.graph.pageFormat = mxGraph.prototype.pageFormat;
-    this.graph.currentScale = 1;
-    this.graph.currentTranslate.x = 0;
-    this.graph.currentTranslate.y = 0;
-    this.updateGraphComponents();
-    this.graph.view.setScale(1);
+    this.editorGraph.resetGraph();
   }
 
   /**
    * Sets the XML node for the current diagram.
    */
   readGraphState(node) {
-    const { urlParams } = this;
-    this.graph.gridEnabled =
-      node.getAttribute("grid") != "0" &&
-      (!this.isChromelessView() || urlParams["grid"] == "1");
-    this.graph.gridSize =
-      parseFloat(node.getAttribute("gridSize")) || mxGraph.prototype.gridSize;
-    this.graph.graphHandler.guidesEnabled = node.getAttribute("guides") != "0";
-    this.graph.setTooltips(node.getAttribute("tooltips") != "0");
-    this.graph.setConnectable(node.getAttribute("connect") != "0");
-    this.graph.connectionArrowsEnabled = node.getAttribute("arrows") != "0";
-    this.graph.foldingEnabled = node.getAttribute("fold") != "0";
-
-    if (this.isChromelessView() && this.graph.foldingEnabled) {
-      this.graph.foldingEnabled = urlParams["nav"] == "1";
-      this.graph.cellRenderer.forceControlClickHandler = this.graph.foldingEnabled;
-    }
-
-    var ps = parseFloat(node.getAttribute("pageScale"));
-
-    if (!isNaN(ps) && ps > 0) {
-      this.graph.pageScale = ps;
-    } else {
-      this.graph.pageScale = mxGraph.prototype.pageScale;
-    }
-
-    if (!this.graph.isLightboxView() && !this.graph.isViewer()) {
-      var pv = node.getAttribute("page");
-
-      if (pv != null) {
-        this.graph.pageVisible = pv != "0";
-      } else {
-        this.graph.pageVisible = this.graph.defaultPageVisible;
-      }
-    } else {
-      this.graph.pageVisible = false;
-    }
-
-    this.graph.pageBreaksVisible = this.graph.pageVisible;
-    this.graph.preferPageSize = this.graph.pageBreaksVisible;
-
-    var pw = parseFloat(node.getAttribute("pageWidth"));
-    var ph = parseFloat(node.getAttribute("pageHeight"));
-
-    if (!isNaN(pw) && !isNaN(ph)) {
-      this.graph.pageFormat = new mxRectangle(0, 0, pw, ph);
-    }
-
-    // Loads the persistent state settings
-    var bg = node.getAttribute("background");
-
-    if (bg != null && bg.length > 0) {
-      this.graph.background = bg;
-    } else {
-      this.graph.background = null;
-    }
+    return this.editorGraph.readGraphState(node);
   }
 
   /**
    * Sets the XML node for the current diagram.
    */
   setGraphXml(node) {
-    if (node != null) {
-      var dec = new mxCodec(node.ownerDocument);
-
-      if (node.nodeName == "mxGraphModel") {
-        this.graph.model.beginUpdate();
-
-        try {
-          this.graph.model.clear();
-          this.graph.view.scale = 1;
-          this.readGraphState(node);
-          this.updateGraphComponents();
-          dec.decode(node, this.graph.getModel());
-        } finally {
-          this.graph.model.endUpdate();
-        }
-
-        this.fireEvent(new mxEventObject("resetGraphView"));
-      } else if (node.nodeName == "root") {
-        this.resetGraph();
-
-        // Workaround for invalid XML output in Firefox 20 due to bug in mxUtils.getXml
-        var wrapper = dec.document.createElement("mxGraphModel");
-        wrapper.appendChild(node);
-
-        dec.decode(wrapper, this.graph.getModel());
-        this.updateGraphComponents();
-        this.fireEvent(new mxEventObject("resetGraphView"));
-      } else {
-        throw {
-          message: mxResources.get("cannotOpenFile"),
-          node: node,
-          toString: function () {
-            return this.message;
-          },
-        };
-      }
-    } else {
-      this.resetGraph();
-      this.graph.model.clear();
-      this.fireEvent("resetGraphView");
-    }
+    this.editorGraph.setGraphXml(node);
   }
 
   fireEvent(_event) {
     // on mxEventSource
     // this.fireEvent(new mxEventObject('resetGraphView'));
-  }
-
-  /**
-   * Returns the XML node that represents the current diagram.
-   */
-  getGraphXml(ignoreSelection) {
-    ignoreSelection = ignoreSelection != null ? ignoreSelection : true;
-    var node: any = null;
-
-    if (ignoreSelection) {
-      var enc = new mxCodec(mxUtils.createXmlDocument());
-      node = enc.encode(this.graph.getModel());
-    } else {
-      node = this.graph.encodeCells(
-        mxUtils.sortCells(
-          this.graph.model.getTopmostCells(this.graph.getSelectionCells())
-        )
-      );
-    }
-
-    if (this.graph.view.translate.x != 0 || this.graph.view.translate.y != 0) {
-      node.setAttribute(
-        "dx",
-        Math.round(this.graph.view.translate.x * 100) / 100
-      );
-      node.setAttribute(
-        "dy",
-        Math.round(this.graph.view.translate.y * 100) / 100
-      );
-    }
-
-    node.setAttribute("grid", this.graph.isGridEnabled() ? "1" : "0");
-    node.setAttribute("gridSize", this.graph.gridSize);
-    node.setAttribute(
-      "guides",
-      this.graph.graphHandler.guidesEnabled ? "1" : "0"
-    );
-    node.setAttribute(
-      "tooltips",
-      this.graph.tooltipHandler.isEnabled() ? "1" : "0"
-    );
-    node.setAttribute(
-      "connect",
-      this.graph.connectionHandler.isEnabled() ? "1" : "0"
-    );
-    node.setAttribute("arrows", this.graph.connectionArrowsEnabled ? "1" : "0");
-    node.setAttribute("fold", this.graph.foldingEnabled ? "1" : "0");
-    node.setAttribute("page", this.graph.pageVisible ? "1" : "0");
-    node.setAttribute("pageScale", this.graph.pageScale);
-    node.setAttribute("pageWidth", this.graph.pageFormat.width);
-    node.setAttribute("pageHeight", this.graph.pageFormat.height);
-
-    if (this.graph.background != null) {
-      node.setAttribute("background", this.graph.background);
-    }
-
-    return node;
-  }
-
-  /**
-   * Keeps the graph container in sync with the persistent graph state
-   */
-  updateGraphComponents() {
-    var graph = this.graph;
-
-    if (graph.container != null) {
-      graph.view.validateBackground();
-      graph.container.style.overflow = graph.scrollbars
-        ? "auto"
-        : this.defaultGraphOverflow;
-
-      this.fireEvent(new mxEventObject("updateGraphComponents"));
-    }
   }
 
   /**
@@ -539,32 +316,8 @@ export class Editor {
   }
 
   // Keeps the selection in sync with the history
-  undoHandler(_sender, evt) {
-    const { graph } = this;
-    var cand = graph.getSelectionCellsForChanges(
-      evt.getProperty("edit").changes,
-      function (change) {
-        // Only selects changes to the cell hierarchy
-        return !(change instanceof mxChildChange);
-      }
-    );
-
-    if (cand.length > 0) {
-      // var model = graph.getModel();
-      var cells = [];
-
-      for (var i = 0; i < cand.length; i++) {
-        const candidate = cand[i];
-        if (graph.view.getState(candidate) != null) {
-          this.addCell(cells, candidate);
-        }
-      }
-      graph.setSelectionCells(cells);
-    }
-  }
-
-  addCell(cells, cell) {
-    cells.push(cell);
+  undoHandler(sender, evt) {
+    this.undo.undoHandler(sender, evt);
   }
 
   /**
