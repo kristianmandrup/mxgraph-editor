@@ -14,7 +14,7 @@ import { LinkDialog } from "./dialogs/LinkDialog";
 import { EditDataDialog } from "./dialogs/EditDataDialog";
 import { BackgroundImageDialog } from "./dialogs/BackgroundImageDialog";
 import { UiDisplay } from "./display";
-import { GraphExtracter } from "./extract";
+import { GraphExtractor } from "./extract";
 import { Layouter } from "./layout";
 import { ScrollbarsManager } from "./scrollbars/ScrollbarsManager";
 const {
@@ -79,7 +79,7 @@ export class EditorUI {
   linkDialog: LinkDialog;
   editDataDialog: EditDataDialog;
   backgroundImageDialog: BackgroundImageDialog;
-  graphExtracter: GraphExtracter;
+  graphExtracter: GraphExtractor;
 
   uiDisplay: UiDisplay;
   layouter: Layouter;
@@ -110,7 +110,7 @@ export class EditorUI {
     this.scrollbarsManager = new ScrollbarsManager(this);
     this.uiDisplay = new UiDisplay(this);
     this.layouter = new Layouter(this);
-    this.graphExtracter = new GraphExtracter(this);
+    this.graphExtracter = new GraphExtractor(this);
     this.undoRedo = new UndoRedo(this);
     this.splitter = new Splitter(this);
     this.pageConfig = new PageConfig(this);

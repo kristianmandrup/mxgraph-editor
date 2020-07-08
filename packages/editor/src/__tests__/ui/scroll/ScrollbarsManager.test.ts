@@ -1,4 +1,4 @@
-import { ScrollbarsManager, EditorUI } from "../..";
+import { ScrollbarsManager, EditorUI } from "../../..";
 
 describe("ScrollbarsManager", () => {
   const editor = {};
