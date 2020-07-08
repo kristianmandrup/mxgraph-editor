@@ -11,27 +11,33 @@ export class Undo {
 
   // Keeps the selection in sync with the history
   undoHandler(_sender, evt) {
+    const candidates = this.candidatesFor(evt);
+    this.undoCells(candidates);
+  }
+
+  candidatesFor(evt) {
     const { graph } = this.editor;
-    var cand = graph.getSelectionCellsForChanges(
-      evt.getProperty("edit").changes,
-      function (change) {
-        // Only selects changes to the cell hierarchy
-        return !(change instanceof mxChildChange);
-      }
-    );
+    const onChange = (change) => {
+      // Only selects changes to the cell hierarchy
+      return !(change instanceof mxChildChange);
+    };
+    const { changes } = evt.getProperty("edit");
+    return graph.getSelectionCellsForChanges(changes, onChange);
+  }
 
-    if (cand.length > 0) {
-      // var model = graph.getModel();
-      var cells = [];
+  undoCells(candidates) {
+    if (candidates.length == 0) return;
+    const { graph } = this.editor;
+    // var model = graph.getModel();
+    var cells = [];
 
-      for (var i = 0; i < cand.length; i++) {
-        const candidate = cand[i];
-        if (graph.view.getState(candidate) != null) {
-          this.addCell(cells, candidate);
-        }
+    for (var i = 0; i < candidates.length; i++) {
+      const candidate = candidates[i];
+      if (graph.view.getState(candidate) != null) {
+        this.addCell(cells, candidate);
       }
-      graph.setSelectionCells(cells);
     }
+    graph.setSelectionCells(cells);
   }
 
   addCell(cells, cell) {

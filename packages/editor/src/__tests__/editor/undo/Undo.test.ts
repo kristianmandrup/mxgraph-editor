@@ -26,6 +26,22 @@ describe("Undo", () => {
       });
     });
 
+    describe("candidatesFor(evt)", () => {
+      it("no throw", () => {
+        const evt = {};
+        const candidates = instance.candidatesFor(evt);
+        expect(candidates).toBeDefined();
+      });
+    });
+
+    describe("candidatesFor(evt)", () => {
+      it("no throw", () => {
+        const evt = {};
+        const candidates = instance.candidatesFor(evt);
+        expect(() => instance.undoCells(candidates)).not.toThrow();
+      });
+    });
+
     describe("undoHandler(sender, evt)", () => {
       it("no throw", () => {
         const sender = {};

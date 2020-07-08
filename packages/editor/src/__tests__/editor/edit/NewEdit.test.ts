@@ -14,15 +14,44 @@ describe("NewEdit", () => {
           expect(instance.editor).toBe(editor);
         });
       });
+
+      describe("isClientMode", () => {
+        it("is true", () => {
+          expect(instance.isClientMode).toBeTruthy();
+        });
+      });
     });
   });
 
   describe("methods", () => {
+    describe("paramsFor(title)", () => {
+      it("edits - no throw", () => {
+        const title = "my title";
+        expect(instance.paramsFor(title)).toBeDefined();
+      });
+    });
+
+    describe("openLinkClientMode(params, xml)", () => {
+      it("opens - no throw", () => {
+        const params = "x",
+          xml = "x";
+        expect(() => instance.openLinkClientMode(params, xml)).not.toThrow();
+      });
+    });
+
+    describe("openLink(params, xml)", () => {
+      it("opens - no throw", () => {
+        const params = "x",
+          xml = "x";
+        expect(() => instance.openLink(params, xml)).not.toThrow();
+      });
+    });
+
     describe("editAsNew(xml, title)", () => {
       it("edits - no throw", () => {
         const xml = "x";
         const title = "my title";
-        expect(() => editor.editAsNew(xml, title)).not.toThrow();
+        expect(() => instance.editAsNew(xml, title)).not.toThrow();
       });
     });
   });
