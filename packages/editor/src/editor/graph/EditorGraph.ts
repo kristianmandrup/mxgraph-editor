@@ -244,8 +244,7 @@ export class EditorGraph {
     }
   }
 
-  fireEvent(_event) {
-    // on mxEventSource
-    // this.fireEvent(new mxEventObject('resetGraphView'));
+  fireEvent(event) {
+    this.editor.fireEvent(event);
   }
 }
