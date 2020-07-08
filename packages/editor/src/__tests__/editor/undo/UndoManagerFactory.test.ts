@@ -18,9 +18,27 @@ describe("UndoManagerFactory", () => {
   });
 
   describe("methods", () => {
+    describe("createUndoManagerInstance()", () => {
+      it("creates mxUndoManager instance", () => {
+        expect(instance.createUndoManagerInstance()).toBeDefined();
+      });
+    });
+
+    describe("addUndoListeners()", () => {
+      it("adds listeners", () => {
+        expect(instance.addUndoListeners()).toBeDefined();
+      });
+    });
+
+    describe("addRedoListeners()", () => {
+      it("adds listeners", () => {
+        expect(instance.addRedoListeners()).toBeDefined();
+      });
+    });
+
     describe("createUndoManager()", () => {
-      it("is a filename", () => {
-        expect(editor.createUndoManager()).toBeDefined();
+      it("creates and returns manager with undo/redo listeners", () => {
+        expect(instance.createUndoManager()).toBeDefined();
       });
     });
   });

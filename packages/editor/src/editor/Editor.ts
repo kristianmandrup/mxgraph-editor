@@ -4,6 +4,7 @@ import { UndoManagerFactory } from "./undo";
 import { EditorGraph } from "./graph/EditorGraph";
 import { Undo } from "./undo/Undo";
 import { NewEdit } from "./edit";
+import { EditorSetup } from "./setup";
 const { mxPoint, mxEvent, mxClient, mxResources } = mx;
 
 //const Graph: any = {};
@@ -121,6 +122,7 @@ export class Editor {
   editorGraph: EditorGraph;
   undo: Undo;
   newEdit: NewEdit;
+  editorSetup: EditorSetup;
 
   constructor(chromeless, themes, model, graph, editable) {
     // mxEventSource.call(this);
@@ -133,6 +135,7 @@ export class Editor {
     this.undoManagerFactory = this.createUndoManagerFactory();
     this.undo = new Undo(this);
     this.newEdit = new NewEdit(this);
+    this.editorSetup = new EditorSetup();
     this.status = "";
   }
 
@@ -201,27 +204,7 @@ export class Editor {
   // Cross-domain window access is not allowed in FF, so if we
   // were opened from another domain then this will fail.
   setup() {
-    try {
-      var op: any = window;
-
-      while (
-        op.opener != null &&
-        typeof op.opener.Editor !== "undefined" &&
-        !isNaN(op.opener.Editor.pageCounter) &&
-        // Workaround for possible infinite loop in FF https://drawio.atlassian.net/browse/DS-795
-        op.opener != op
-      ) {
-        op = op.opener;
-      }
-
-      // Increments the counter in the first opener in the chain
-      if (op != null) {
-        op.Editor.pageCounter++;
-        Editor.pageCounter = op.Editor.pageCounter;
-      }
-    } catch (e) {
-      // ignore
-    }
+    this.editorSetup.setup();
   }
 
   /**

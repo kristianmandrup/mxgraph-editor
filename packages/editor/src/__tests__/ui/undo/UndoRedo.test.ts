@@ -4,47 +4,47 @@ describe("UndoRedo", () => {
   const editor = {};
   const container = document.createElement("div");
 
-  let dialog, ui;
+  let instance, ui;
   beforeEach(() => {
     ui = new EditorUI(editor, container);
-    dialog = new UndoRedo(ui);
+    instance = new UndoRedo(ui);
   });
 
   describe("instance", () => {
     describe("properties", () => {
       describe("ui", () => {
         it("is set", () => {
-          expect(dialog.ui).toBe(ui);
+          expect(instance.ui).toBe(ui);
         });
       });
 
       describe("graph", () => {
         it("is set", () => {
-          expect(dialog.graph).toBeDefined();
+          expect(instance.graph).toBeDefined();
         });
       });
 
       describe("editor", () => {
         it("is set", () => {
-          expect(dialog.editor).toBeDefined();
+          expect(instance.editor).toBeDefined();
         });
       });
 
       describe("actions", () => {
         it("is set", () => {
-          expect(dialog.actions).toBeDefined();
+          expect(instance.actions).toBeDefined();
         });
       });
 
       describe("isEditing", () => {
         it("is set", () => {
-          expect(dialog.isEditing).toBeDefined();
+          expect(instance.isEditing).toBeDefined();
         });
       });
 
       describe("undoManager", () => {
         it("is set", () => {
-          expect(dialog.undoManager).toBeDefined();
+          expect(instance.undoManager).toBeDefined();
         });
       });
     });
@@ -52,19 +52,39 @@ describe("UndoRedo", () => {
     describe("methods", () => {
       describe("canRedo()", () => {
         it("no throw", () => {
-          expect(() => dialog.canRedo()).not.toThrow();
+          expect(() => instance.canRedo()).not.toThrow();
         });
       });
 
       describe("canUndo()", () => {
         it("no throw", () => {
-          expect(() => dialog.canUndo()).not.toThrow();
+          expect(() => instance.canUndo()).not.toThrow();
+        });
+      });
+
+      describe("configureUndoListener()", () => {
+        it("undo listener", () => {
+          expect(instance.configureUndoListener()).toBeDefined();
+        });
+      });
+
+      describe("setStartEditing(undoListener)", () => {
+        it("no throw", () => {
+          const undoListener = () => {};
+          expect(() => instance.setStartEditing(undoListener)).not.toThrow();
+        });
+      });
+
+      describe("setStopEditing(undoListener)", () => {
+        it("no throw", () => {
+          const undoListener = () => {};
+          expect(() => instance.setStopEditing(undoListener)).not.toThrow();
         });
       });
 
       describe("addUndoListener()", () => {
         it("no throw", () => {
-          expect(() => dialog.addUndoListener()).not.toThrow();
+          expect(() => instance.addUndoListener()).not.toThrow();
         });
       });
     });

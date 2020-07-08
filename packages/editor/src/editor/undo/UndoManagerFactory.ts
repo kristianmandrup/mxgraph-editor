@@ -7,25 +7,48 @@ export class UndoManagerFactory {
 
   constructor(editor: Editor) {
     this.editor = editor;
+    this.undoMgr = this.createUndoManagerInstance();
   }
 
   set undoMgr(undoMgr) {
     this.editor.undoMgr = undoMgr;
   }
 
+  createUndoManagerInstance() {
+    return new mxUndoManager(200);
+  }
+
+  get graph() {
+    return this.editor.graph;
+  }
+
+  get model() {
+    return this.graph.getModel();
+  }
+
+  get view() {
+    return this.graph.getView();
+  }
   /**
    * Creates and returns a new undo manager.
    */
   createUndoManager() {
-    const { undoHandler, undoMgr, graph, listener } = this.editor;
-    this.undoMgr = new mxUndoManager(200);
+    const { addUndoListeners, addRedoListeners } = this;
+    addUndoListeners();
+    addRedoListeners();
+    return this.undoMgr;
+  }
 
-    graph.getModel().addListener(mxEvent.UNDO, listener);
-    graph.getView().addListener(mxEvent.UNDO, listener);
-
+  addUndoListeners() {
+    const { undoHandler, undoMgr, listener } = this.editor;
+    const { view, model } = this;
+    model.addListener(mxEvent.UNDO, listener);
+    view.addListener(mxEvent.UNDO, listener);
     undoMgr.addListener(mxEvent.UNDO, undoHandler);
-    undoMgr.addListener(mxEvent.REDO, undoHandler);
+  }
 
-    return undoMgr;
+  addRedoListeners() {
+    const { undoHandler, undoMgr } = this.editor;
+    undoMgr.addListener(mxEvent.REDO, undoHandler);
   }
 }

@@ -5,6 +5,7 @@ export class UndoRedo {
   ui: any;
   editor: any;
   actions: any;
+  undoListener: any; // () => void;
 
   constructor(ui) {
     this.ui = ui;
@@ -42,11 +43,51 @@ export class UndoRedo {
    * Updates the states of the given undo/redo items.
    */
   addUndoListener() {
-    var undo = this.actions.get("undo");
-    var redo = this.actions.get("redo");
+    const undoListener = this.configureUndoListener();
+
+    this.setStartEditing(undoListener);
+    this.setStopEditing(undoListener);
+
+    // Updates the button states once
+    undoListener();
+  }
+
+  setStartEditing(undoListener) {
+    // Overrides cell editor to update action states
+    var cellEditorStartEditing = this.editor.graph.cellEditor.startEditing;
+
+    this.editor.graph.cellEditor.startEditing = () => {
+      cellEditorStartEditing.apply(this, arguments);
+      undoListener();
+    };
+  }
+
+  setStopEditing(undoListener) {
+    var cellEditorStopEditing = this.editor.graph.cellEditor.stopEditing;
+
+    this.editor.graph.cellEditor.stopEditing = (_cell, _trigger) => {
+      cellEditorStopEditing.apply(this, arguments);
+      undoListener();
+    };
+  }
+
+  actionFor(name) {
+    return this.actions.get(name);
+  }
+
+  get undo() {
+    return this.actionFor("undo");
+  }
+
+  get redo() {
+    return this.actionFor("redo");
+  }
+
+  configureUndoListener() {
+    const { undo, redo } = this;
 
     var undoMgr = this.editor.undoManager;
-    var undoListener = () => {
+    const undoListener = () => {
       undo.setEnabled(this.canUndo());
       redo.setEnabled(this.canRedo());
     };
@@ -55,23 +96,7 @@ export class UndoRedo {
     undoMgr.addListener(mxEvent.UNDO, undoListener);
     undoMgr.addListener(mxEvent.REDO, undoListener);
     undoMgr.addListener(mxEvent.CLEAR, undoListener);
-
-    // Overrides cell editor to update action states
-    var cellEditorStartEditing = this.editor.graph.cellEditor.startEditing;
-
-    this.editor.graph.cellEditor.startEditing = () => {
-      cellEditorStartEditing.apply(this, arguments);
-      undoListener();
-    };
-
-    var cellEditorStopEditing = this.editor.graph.cellEditor.stopEditing;
-
-    this.editor.graph.cellEditor.stopEditing = (_cell, _trigger) => {
-      cellEditorStopEditing.apply(this, arguments);
-      undoListener();
-    };
-
-    // Updates the button states once
-    undoListener();
+    this.undoListener = undoListener;
+    return undoListener;
   }
 }
