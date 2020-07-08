@@ -37,14 +37,15 @@ export class PageConfig {
    * Loads the stylesheet for this graph.
    */
   setPageScale(value) {
-    this.editor.graph.pageScale = value;
+    const { graph, fireEvent, actions } = this;
+    graph.pageScale = value;
 
-    if (!this.editor.graph.pageVisible) {
-      this.actions.get("pageView").funct();
+    if (!graph.pageVisible) {
+      actions.get("pageView").funct();
     } else {
-      this.editor.graph.view.validateBackground();
-      this.editor.graph.sizeDidChange();
+      graph.view.validateBackground();
+      graph.sizeDidChange();
     }
-    this.fireEvent(new mxEventObject("pageScaleChanged"));
+    fireEvent(new mxEventObject("pageScaleChanged"));
   }
 }

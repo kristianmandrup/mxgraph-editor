@@ -1,14 +1,14 @@
-import { GraphExtracter } from "../../..";
+import { GraphExtractor } from "../../..";
 import { EditorUI } from "../../..";
 
-describe("GraphExtracter", () => {
+describe("GraphExtractor", () => {
   const editor = {};
   const container = document.createElement("div");
 
   let dialog, ui;
   beforeEach(() => {
     ui = new EditorUI(editor, container);
-    dialog = new GraphExtracter(ui);
+    dialog = new GraphExtractor(ui);
   });
 
   describe("instance", () => {

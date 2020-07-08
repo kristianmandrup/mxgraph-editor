@@ -1,5 +1,4 @@
-import mx from "@mxgraph-app/mx";
-const { mxMorphing, mxEvent } = mx;
+import { AnimationSupport } from "./AnimationSupport";
 
 export class Layouter {
   ui: any;
@@ -16,8 +15,7 @@ export class Layouter {
    * Executes the given layout.
    */
   executeLayout(exec, animate, post) {
-    const { graph } = this;
-    const { allowAnimation } = this.ui;
+    const { graph, doFinally } = this;
 
     if (graph.isEnabled()) {
       graph.getModel().beginUpdate();
@@ -26,33 +24,27 @@ export class Layouter {
       } catch (e) {
         throw e;
       } finally {
-        // Animates the changes in the graph model except
-        // for Camino, where animation is too slow
-        if (
-          allowAnimation &&
-          animate &&
-          (navigator.userAgent == null ||
-            navigator.userAgent.indexOf("Camino") < 0)
-        ) {
-          // New API for animating graph layout results asynchronously
-          var morph = new mxMorphing(graph);
-          morph.addListener(mxEvent.DONE, () => {
-            graph.getModel().endUpdate();
-
-            if (post != null) {
-              post();
-            }
-          });
-
-          morph.startAnimation();
-        } else {
-          graph.getModel().endUpdate();
-
-          if (post != null) {
-            post();
-          }
-        }
+        doFinally(animate, post);
       }
     }
+  }
+
+  doFinally(animate, post) {
+    const { addAnimationSupport, noAnimationSupport } = this;
+    addAnimationSupport(animate, post) || noAnimationSupport(post);
+  }
+
+  noAnimationSupport(post) {
+    const { graph } = this;
+    graph.getModel().endUpdate();
+
+    if (post != null) {
+      post();
+    }
+    return;
+  }
+
+  addAnimationSupport(animate, post) {
+    return new AnimationSupport(this.ui, { animate, post }).enable();
   }
 }
