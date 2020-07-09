@@ -7,6 +7,7 @@ export class AnimationSupport {
   graph: any;
   animate: boolean;
   post: any;
+  morph: any;
 
   constructor(ui, { animate, post }) {
     this.ui = ui;
@@ -16,8 +17,8 @@ export class AnimationSupport {
     this.post = post;
   }
 
-  shouldAnimate(animate) {
-    const { allowAnimation } = this.ui;
+  get shouldAnimate() {
+    const { allowAnimation, animate } = this.ui;
     return (
       allowAnimation &&
       animate &&
@@ -26,12 +27,26 @@ export class AnimationSupport {
   }
 
   enable() {
-    const { graph, shouldAnimate, animate, post } = this;
+    const { shouldAnimate, createMorphing, addMorphListener } = this;
     // Animates the changes in the graph model except
     // for Camino, where animation is too slow
-    if (!shouldAnimate(animate)) return;
+    if (!shouldAnimate) return;
     // New API for animating graph layout results asynchronously
+    const morph = createMorphing();
+    addMorphListener(morph);
+    morph.startAnimation();
+    return true;
+  }
+
+  createMorphing() {
+    const { graph } = this;
     var morph = new mxMorphing(graph);
+    this.morph = morph;
+    return morph;
+  }
+
+  addMorphListener(morph) {
+    const { graph, post } = this;
     morph.addListener(mxEvent.DONE, () => {
       graph.getModel().endUpdate();
 
@@ -39,8 +54,6 @@ export class AnimationSupport {
         post();
       }
     });
-
-    morph.startAnimation();
-    return true;
+    return morph;
   }
 }

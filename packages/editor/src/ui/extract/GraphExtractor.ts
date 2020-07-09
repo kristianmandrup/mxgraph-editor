@@ -12,6 +12,14 @@ export class GraphExtractor {
     this.htmlExtractor = new HtmlExtractor(ui);
   }
 
+  createHtmlExtractor(data) {
+    return new HtmlExtractor(this.ui, data);
+  }
+
+  createEventExtractor(evt) {
+    return new EventExtractor(this.ui, evt);
+  }
+
   /**
    * Extracs the graph model from the given HTML data from a data transfer event.
    */

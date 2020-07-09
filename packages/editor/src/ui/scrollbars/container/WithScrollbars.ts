@@ -12,8 +12,18 @@ export class WithScrollbars {
   constructor(editor: any) {
     this.editor = editor;
     this.graph = editor.graph;
-    this.visiblePage = new VisiblePage(editor);
-    this.invisiblePage = new InvisiblePage(editor);
+    this.visiblePage = this.createVisiblePage(editor);
+    this.invisiblePage = this.createInvisiblePage(editor);
+  }
+
+  createInvisiblePage(editor?) {
+    editor = editor || this.editor;
+    return new InvisiblePage(editor);
+  }
+
+  createVisiblePage(editor?) {
+    editor = editor || this.editor;
+    return new VisiblePage(editor);
   }
 
   apply() {

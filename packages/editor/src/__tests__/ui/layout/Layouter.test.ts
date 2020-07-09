@@ -5,42 +5,63 @@ describe("Layouter", () => {
   const editor = {};
   const container = document.createElement("div");
 
-  let dialog, ui;
+  let instance, ui;
   beforeEach(() => {
     ui = new EditorUI(editor, container);
-    dialog = new Layouter(ui);
+    instance = new Layouter(ui);
   });
 
   describe("instance", () => {
     describe("properties", () => {
       describe("ui", () => {
         it("is set", () => {
-          expect(dialog.ui).toBe(ui);
+          expect(instance.ui).toBe(ui);
         });
       });
 
       describe("graph", () => {
         it("is set", () => {
-          expect(dialog.graph).toBeDefined();
+          expect(instance.graph).toBeDefined();
         });
       });
 
       describe("editor", () => {
         it("is set", () => {
-          expect(dialog.editor).toBeDefined();
+          expect(instance.editor).toBeDefined();
         });
       });
     });
 
     describe("methods", () => {
+      const animate = true;
+      const post = () => {};
+
+      describe("doFinally(animate, post)", () => {
+        it("no throw", () => {
+          expect(() => instance.doFinally(animate, post)).not.toThrow();
+        });
+      });
+
+      describe("noAnimationSupport(post)", () => {
+        it("no throw", () => {
+          expect(() => instance.noAnimationSupport(post)).not.toThrow();
+        });
+      });
+
+      describe("addAnimationSupport(animate, post)", () => {
+        it("no throw", () => {
+          expect(() =>
+            instance.addAnimationSupport(animate, post)
+          ).not.toThrow();
+        });
+      });
+
       describe("executeLayout(exec, animate, post)", () => {
         describe("animate", () => {
           const exec = () => {};
-          const animate = true;
-          const post = () => {};
           it("no throw", () => {
             expect(() =>
-              dialog.executeLayout(exec, animate, post)
+              instance.executeLayout(exec, animate, post)
             ).not.toThrow();
           });
         });
@@ -51,7 +72,7 @@ describe("Layouter", () => {
           const post = () => {};
           it("no throw", () => {
             expect(() =>
-              dialog.executeLayout(exec, animate, post)
+              instance.executeLayout(exec, animate, post)
             ).not.toThrow();
           });
         });

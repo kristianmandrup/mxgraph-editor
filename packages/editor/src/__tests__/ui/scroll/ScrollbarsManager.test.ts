@@ -4,29 +4,29 @@ describe("ScrollbarsManager", () => {
   const editor = {};
   const container = document.createElement("div");
 
-  let dialog, ui;
+  let instance, ui;
   beforeEach(() => {
     ui = new EditorUI(editor, container);
-    dialog = new ScrollbarsManager(ui);
+    instance = new ScrollbarsManager(ui);
   });
 
   describe("instance", () => {
     describe("properties", () => {
       describe("ui", () => {
         it("is set", () => {
-          expect(dialog.ui).toBe(ui);
+          expect(instance.ui).toBe(ui);
         });
       });
 
       describe("graph", () => {
         it("is set", () => {
-          expect(dialog.graph).toBeDefined();
+          expect(instance.graph).toBeDefined();
         });
       });
 
       describe("editor", () => {
         it("is set", () => {
-          expect(dialog.editor).toBeDefined();
+          expect(instance.editor).toBeDefined();
         });
       });
     });
@@ -35,20 +35,20 @@ describe("ScrollbarsManager", () => {
       describe("setScrollbars(value)", () => {
         const value = "x";
         it("no throw", () => {
-          expect(() => dialog.setScrollbars(value)).not.toThrow();
+          expect(() => instance.setScrollbars(value)).not.toThrow();
         });
       });
 
       describe("hasScrollbars()", () => {
         const value = "x";
         it("is rue", () => {
-          expect(dialog.hasScrollbars()).toBeTruthy();
+          expect(instance.hasScrollbars()).toBeTruthy();
         });
       });
 
       describe("resetScrollbars()", () => {
         it("reset - no throw", () => {
-          expect(() => dialog.resetScrollbars()).not.toThrow();
+          expect(() => instance.resetScrollbars()).not.toThrow();
         });
       });
     });
