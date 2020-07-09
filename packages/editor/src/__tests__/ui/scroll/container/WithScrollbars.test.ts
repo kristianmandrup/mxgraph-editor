@@ -1,6 +1,6 @@
 import { EditorUI, WithScrollbars } from "../../../..";
 
-describe("ScrollbarsManager", () => {
+describe("WithScrollbars", () => {
   const editor = {};
   const container = document.createElement("div");
 

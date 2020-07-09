@@ -52,7 +52,7 @@ export class NoScrollbars {
       : Math.max(0, (container.clientHeight - bounds.height) / 4);
   }
 
-  get translatedX() {
+  get translateX() {
     const { container, bounds } = this;
     const { width, x } = bounds;
     return Math.floor(Math.max(0, (container.clientWidth - width) / 2) - x + 2);
@@ -63,11 +63,19 @@ export class NoScrollbars {
     return Math.floor(dy - bounds.y + 1);
   }
 
+  get translate() {
+    const { translateX, translateY } = this;
+    return {
+      x: translateX,
+      y: translateY,
+    };
+  }
+
   apply() {
     const { graph, setRectangleBounds } = this;
     setRectangleBounds();
-    const { translatedX, translateY } = this;
-    graph.view.setTranslate(translatedX, translateY);
+    const { x, y } = this.translate;
+    graph.view.setTranslate(x, y);
     return true;
   }
 }
