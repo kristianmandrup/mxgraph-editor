@@ -1,4 +1,4 @@
-import { NewEdit } from "../../../editor";
+import { NewEdit } from "../../editor";
 import { editor } from "../helpers";
 
 describe("NewEdit", () => {

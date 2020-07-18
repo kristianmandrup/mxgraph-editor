@@ -41,6 +41,7 @@
   "references": [
     { "path": "packages/mx" },
     { "path": "packages/resources" },
-    { "path": "packages/editor" }
+    { "path": "packages/editor" },
+    { "path": "packages/editor-ui" }
   ]
 }

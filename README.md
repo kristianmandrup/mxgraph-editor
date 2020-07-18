@@ -1,46 +1,16 @@
-# mxgraph-editor
+# MxGraph Editor
 
-To extend mxgraph classes for use with TypeScript, use the [simple inheritance](https://johnresig.com/blog/simple-javascript-inheritance/) by John Resig
+Contains the main Editor and Editor UI classes for building an MxGraph based Graph Editor app.
 
-```ts
-import { Class } from "./Class";
+## packages
 
-/**
- *
- * Usage
- * const graph = {};
- * new MxCellEditor(graph);
- */
-export const MxCellEditor = Class.extend({
-  documentMode: document["documentMode"],
+- `editor`
+- `editor-ui`
 
-  init: function (graph) {
-    mxCellEditor.apply(this, [graph]);
-  },
+## Editor
 
-  getMinimumSize: function (state) {
-    const { graph } = this;
-    var scale = graph.getView().scale;
+See [./packages/editor/docs/index.md]
 
-    return new mxRectangle(
-      0,
-      0,
-      state.text == null ? 30 : state.text.size * scale + 20,
-      30
-    );
-  },
-}
-```
+## Editor UI
 
-To call inherited functions, use this pattern
-
-```ts
-  applyValue: function (state, value) {
-    const { graph } = this;
-    const mxCellEditorApplyValue = mxCellEditor.prototype.applyValue;
-    // Removes empty relative child labels in edges
-    graph.getModel().beginUpdate();
-
-    mxCellEditorApplyValue.apply(this, [state, value]);
-  }
-```
+See [./packages/editor-ui/docs/index.md]

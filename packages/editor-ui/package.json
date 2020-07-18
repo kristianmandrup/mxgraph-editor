@@ -1,7 +1,7 @@
 {
-  "name": "@mxgraph-app/editor",
+  "name": "@mxgraph-app/editor-ui",
   "version": "0.0.1",
-  "description": "mxGraph Editor",
+  "description": "MxGraph Editor UI",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "repository": "",
