@@ -5,30 +5,43 @@ export class UiDisplay extends ElementCreator {
     return this.ui.factory;
   }
 
+  get formatEnabled() {
+    return this.ui.formatEnabled;
+  }
+
+  get formatContainer() {
+    return this.ui.formatContainer;
+  }
+
   get chromeless() {
     return this.editor.chromeless;
   }
 
   setMenubar() {
     // Creates menubar
-    this.menubar = this.chromeless
-      ? null
-      : this.menus.createMenubar(this.createDiv("geMenubar"));
+    this.menubar = this.chromeless && this.createMenuBar();
   }
 
+  createMenuBar() {
+    return this.menus.createMenubar(this.createDiv("geMenubar"));
+  }
+
+  // Creates the sidebar
   setSidebar() {
-    // Creates the sidebar
-    this.sidebar = this.editor.chromeless
-      ? null
-      : this.createSidebar(this.sidebarContainer);
+    this.sidebar = this.chromeless && this.createSidebar(this.sidebarContainer);
   }
 
+  // Creates the format sidebar
   setFormatSidebar() {
-    const { chromeless, ui } = this;
-    const { formatEnabled, formatContainer } = ui;
-    // Creates the format sidebar
+    const { formatEnabled, formatContainer, chromeless } = this;
     this.format =
-      chromeless || !formatEnabled ? null : this.createFormat(formatContainer);
+      (chromeless || !formatEnabled) && this.createFormat(formatContainer);
+  }
+
+  setToolbar() {
+    // Creates toolbar
+    this.toolbar =
+      this.editor.chromeless && this.createToolbar(this.createDiv("geToolbar"));
   }
 
   /**
@@ -36,14 +49,10 @@ export class UiDisplay extends ElementCreator {
    */
   createUi() {
     const {
-      setMenubar,
       appendMenubar,
-      setSidebar,
       appendSidebar,
-      setFormatSidebar,
       appendFormatSidebar,
-      setFooter,
-      setToolbar,
+      appendFooter,
       appendSideFooterContainer,
       appendTabContainer,
       appendToolbar,
@@ -51,81 +60,80 @@ export class UiDisplay extends ElementCreator {
       appendDiagram,
     } = this;
 
-    setMenubar();
     appendMenubar();
-
-    setSidebar();
     appendSidebar();
-
-    setFormatSidebar();
     appendFormatSidebar();
-
-    setFooter();
-
+    appendFooter();
     appendDiagram();
-
     appendSideFooterContainer();
     appendTabContainer();
-
-    setToolbar();
     appendToolbar();
     appendHSplit();
   }
 
-  setToolbar() {
-    // Creates toolbar
-    this.toolbar = this.editor.chromeless
-      ? null
-      : this.createToolbar(this.createDiv("geToolbar"));
-  }
-
   appendDiagram() {
-    this.container.appendChild(this.diagramContainer);
+    const { diagramContainer, container } = this;
+    container.appendChild(diagramContainer);
   }
 
   appendFormatSidebar() {
+    const { setFormatSidebar, format, container } = this;
+    setFormatSidebar();
+
     const { formatContainer } = this.ui;
-    if (this.format) {
-      this.container.appendChild(formatContainer);
+    if (format) {
+      container.appendChild(formatContainer);
     }
   }
 
   appendSidebar() {
-    if (this.sidebar) {
-      this.container.appendChild(this.sidebarContainer);
+    const { container, sidebarContainer, sidebar, setSidebar } = this;
+    setSidebar();
+    if (sidebar) {
+      container.appendChild(sidebarContainer);
     }
   }
 
   appendMenubar() {
-    if (this.menubar) {
-      this.menubarContainer.appendChild(this.menubar.container);
+    const { menubarContainer, menubar, setMenubar, appendStatusbar } = this;
+    setMenubar();
+    if (menubar) {
+      menubarContainer.appendChild(menubar.container);
     }
-    this.appendStatusbar();
+    appendStatusbar();
   }
 
   appendStatusbar() {
-    const { statusContainer, menubarContainer } = this.ui;
+    const {
+      container,
+      editor,
+      menubar,
+      statusContainer,
+      menubarContainer,
+      setStatusText,
+      createStatusContainer,
+    } = this;
+
     // Adds status bar in menubar
-    if (this.menubar) {
-      this.statusContainer = this.createStatusContainer();
+    if (!menubar) return;
+    this.statusContainer = createStatusContainer();
 
-      // Connects the status bar to the editor status
-      this.editor.addListener("statusChanged", () => {
-        this.setStatusText(this.editor.getStatus());
-      });
+    // Connects the status bar to the editor status
+    editor.addListener("statusChanged", () => {
+      setStatusText(editor.getStatus());
+    });
 
-      this.setStatusText(this.editor.getStatus());
-      this.menubar.container.appendChild(statusContainer);
+    setStatusText(editor.getStatus());
+    menubar.container.appendChild(statusContainer);
 
-      // Inserts into DOM
-      this.container.appendChild(menubarContainer);
-    }
+    // Inserts into DOM
+    container.appendChild(menubarContainer);
   }
 
   setFooter() {
     const { chromeless } = this;
     // Creates the footer
-    this.footer = chromeless ? null : this.createFooter();
+    this.footer = chromeless && this.createFooter();
   }
 
   appendFooter() {
@@ -138,21 +146,26 @@ export class UiDisplay extends ElementCreator {
   }
 
   appendSideFooterContainer() {
-    if (this.sidebar && this.sidebarFooterContainer) {
-      this.container.appendChild(this.sidebarFooterContainer);
+    const { container, sidebar, sidebarFooterContainer } = this;
+    if (sidebar && sidebar) {
+      container.appendChild(sidebarFooterContainer);
     }
   }
 
   appendTabContainer() {
-    if (this.container && this.tabContainer) {
-      this.container.appendChild(this.tabContainer);
+    const { container, tabContainer } = this;
+    if (container && tabContainer) {
+      container.appendChild(tabContainer);
     }
   }
 
   appendToolbar() {
-    if (this.toolbar) {
-      this.toolbarContainer.appendChild(this.toolbar.container);
-      this.container.appendChild(this.toolbarContainer);
+    const { setToolbar, container, toolbar, toolbarContainer } = this;
+    setToolbar();
+
+    if (toolbar) {
+      toolbarContainer.appendChild(toolbar.container);
+      container.appendChild(toolbarContainer);
     }
   }
 

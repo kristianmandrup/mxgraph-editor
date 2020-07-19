@@ -35,33 +35,30 @@ export class ElementCreator {
   createDivs() {
     const { formatWidth, splitSize, editor } = this.ui;
 
-    this.menubarContainer = this.createDiv("geMenubarContainer");
-    this.toolbarContainer = this.createDiv("geToolbarContainer");
+    const {
+      setMenubarContainer,
+      setToolbarContainer,
+      setFooterContainer,
+      setFormatContainer,
+    } = this;
+    setMenubarContainer();
+    setToolbarContainer();
+    setFooterContainer();
+    setFormatContainer();
+
     this.sidebarContainer = this.createDiv("geSidebarContainer");
-    this.formatContainer = this.createDiv(
-      "geSidebarContainer geFormatContainer"
-    );
     this.diagramContainer = this.createDiv("geDiagramContainer");
-    this.footerContainer = this.createDiv("geFooterContainer");
     this.hsplit = this.createDiv("geHsplit");
     this.hsplit.setAttribute("title", mxResources.get("collapseExpand"));
 
     // Sets static style for containers
-    this.menubarContainer.style.top = "0px";
-    this.menubarContainer.style.left = "0px";
-    this.menubarContainer.style.right = "0px";
-    this.toolbarContainer.style.left = "0px";
-    this.toolbarContainer.style.right = "0px";
     this.sidebarContainer.style.left = "0px";
-    this.formatContainer.style.right = "0px";
-    this.formatContainer.style.zIndex = "1";
+
     this.diagramContainer.style.right =
       (this.format != null ? formatWidth : 0) + "px";
-    this.footerContainer.style.left = "0px";
-    this.footerContainer.style.right = "0px";
-    this.footerContainer.style.bottom = "0px";
-    this.footerContainer.style.zIndex = mxPopupMenu.prototype.zIndex - 2;
+
     this.hsplit.style.width = splitSize + "px";
+
     this.sidebarFooterContainer = this.createSidebarFooterContainer();
 
     if (this.sidebarFooterContainer) {
@@ -73,6 +70,39 @@ export class ElementCreator {
     } else {
       this.diagramContainer.style.border = "none";
     }
+  }
+
+  setMenubarContainer() {
+    this.menubarContainer = this.createDiv("geMenubarContainer");
+    this.menubarContainer.style.top = "0px";
+    this.menubarContainer.style.left = "0px";
+    this.menubarContainer.style.right = "0px";
+    return this;
+  }
+
+  setToolbarContainer() {
+    this.toolbarContainer = this.createDiv("geToolbarContainer");
+    this.toolbarContainer.style.left = "0px";
+    this.toolbarContainer.style.right = "0px";
+    return this;
+  }
+
+  setFooterContainer() {
+    this.footerContainer = this.createDiv("geFooterContainer");
+    this.footerContainer.style.left = "0px";
+    this.footerContainer.style.right = "0px";
+    this.footerContainer.style.bottom = "0px";
+    this.footerContainer.style.zIndex = mxPopupMenu.prototype.zIndex - 2;
+    return this;
+  }
+
+  setFormatContainer() {
+    this.formatContainer = this.createDiv(
+      "geSidebarContainer geFormatContainer"
+    );
+    this.formatContainer.style.right = "0px";
+    this.formatContainer.style.zIndex = "1";
+    return this;
   }
 
   /**
