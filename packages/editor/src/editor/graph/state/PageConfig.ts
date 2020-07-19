@@ -16,13 +16,15 @@ export class PageConfig {
     return this.stateReader.node;
   }
 
-  get ps() {
+  get nodePageScale() {
     return parseFloat(this.node.getAttribute("pageScale"));
   }
 
   get pageScale() {
-    const { ps } = this;
-    return !isNaN(ps) && ps > 0 ? ps : mxGraph.prototype.pageScale;
+    const { nodePageScale } = this;
+    return !isNaN(nodePageScale) && nodePageScale > 0
+      ? nodePageScale
+      : mxGraph.prototype.pageScale;
   }
 
   setPageScale() {
