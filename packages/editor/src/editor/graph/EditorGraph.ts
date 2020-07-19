@@ -3,7 +3,7 @@ import mx from "@mxgraph-app/mx";
 import { GraphStateReader } from "./state/GraphStateReader";
 import { GraphXml } from "./xml";
 import { GraphResetter } from "./reset";
-const { mxEventObject, mxGraph } = mx;
+const { mxEventObject } = mx;
 
 interface IGraph {
   transparentBackground?: boolean;

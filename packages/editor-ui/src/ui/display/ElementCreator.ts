@@ -7,6 +7,7 @@ export class ElementCreator {
   container: any;
   sidebar: any;
   toolbar: any;
+  footer: any;
   menubarContainer: any;
   toolbarContainer: any;
   sidebarContainer: any;

@@ -2,4 +2,4 @@
 
 Controls undo/redo behavior
 
-- `undoHandler` the undo handler
+- `undoHandler(sender, evt)` the undo handler

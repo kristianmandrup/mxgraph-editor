@@ -5,7 +5,6 @@ export class UndoRedo {
   ui: any;
   editor: any;
   actions: any;
-  undoListener: any; // () => void;
 
   constructor(ui) {
     this.ui = ui;
@@ -84,19 +83,18 @@ export class UndoRedo {
   }
 
   configureUndoListener() {
-    const { undo, redo } = this;
-
     var undoMgr = this.editor.undoManager;
-    const undoListener = () => {
-      undo.setEnabled(this.canUndo());
-      redo.setEnabled(this.canRedo());
-    };
-
+    const { undoListener } = this;
     undoMgr.addListener(mxEvent.ADD, undoListener);
     undoMgr.addListener(mxEvent.UNDO, undoListener);
     undoMgr.addListener(mxEvent.REDO, undoListener);
     undoMgr.addListener(mxEvent.CLEAR, undoListener);
-    this.undoListener = undoListener;
     return undoListener;
   }
+
+  undoListener = () => {
+    const { undo, redo } = this;
+    undo.setEnabled(this.canUndo());
+    redo.setEnabled(this.canRedo());
+  };
 }

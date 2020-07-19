@@ -20,25 +20,35 @@ export class ErrorManager {
    * @param {number} dy Y-coordinate of the translation.
    */
   handleError() {
+    const { normalError, customError } = this;
+    normalError() || customError();
+  }
+
+  normalError() {
     let { resp, title, fn, invokeFnOnClose } = this.opts;
-    var e = resp && resp.error ? resp.error : resp;
+    const error = resp && resp.error ? resp.error : resp;
 
-    if (e || title) {
-      var msg = mxUtils.htmlEntities(mxResources.get("unknownError"));
-      var btn = mxResources.get("ok");
-      title = title ? title : mxResources.get("error");
+    if (!(error || title)) return;
+    var msg = mxUtils.htmlEntities(mxResources.get("unknownError"));
+    var btn = mxResources.get("ok");
+    title = title ? title : mxResources.get("error");
 
-      if (e && e.message != null) {
-        msg = mxUtils.htmlEntities(e.message);
-      }
-
-      invokeFnOnClose = invokeFnOnClose ? fn : null;
-      const opts = { title, msg, btn, fn, invokeFnOnClose };
-
-      this.showError(opts);
-    } else if (fn) {
-      fn();
+    if (error && error.message != null) {
+      msg = mxUtils.htmlEntities(error.message);
     }
+
+    invokeFnOnClose = invokeFnOnClose ? fn : null;
+    const opts = { title, msg, btn, fn, invokeFnOnClose };
+
+    this.showError(opts);
+    return true;
+  }
+
+  customError() {
+    const { fn } = this.opts;
+    if (!fn) return;
+    fn();
+    return true;
   }
 
   /**

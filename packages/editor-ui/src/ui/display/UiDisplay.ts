@@ -5,34 +5,108 @@ export class UiDisplay extends ElementCreator {
     return this.ui.factory;
   }
 
+  get chromeless() {
+    return this.editor.chromeless;
+  }
+
+  setMenubar() {
+    // Creates menubar
+    this.menubar = this.chromeless
+      ? null
+      : this.menus.createMenubar(this.createDiv("geMenubar"));
+  }
+
+  setSidebar() {
+    // Creates the sidebar
+    this.sidebar = this.editor.chromeless
+      ? null
+      : this.createSidebar(this.sidebarContainer);
+  }
+
+  setFormatSidebar() {
+    const { chromeless, ui } = this;
+    const { formatEnabled, formatContainer } = ui;
+    // Creates the format sidebar
+    this.format =
+      chromeless || !formatEnabled ? null : this.createFormat(formatContainer);
+  }
+
   /**
    * Creates the required containers.
    */
   createUi() {
-    const { editor, ui } = this;
-    const { chromeless } = editor;
     const {
-      formatEnabled,
-      formatContainer,
-      footerContainer,
-      statusContainer,
-      menubar,
-      menubarContainer,
-      addSplitHandler,
-      refresh,
-    } = ui;
+      setMenubar,
+      appendMenubar,
+      setSidebar,
+      appendSidebar,
+      setFormatSidebar,
+      appendFormatSidebar,
+      setFooter,
+      setToolbar,
+      appendSideFooterContainer,
+      appendTabContainer,
+      appendToolbar,
+      appendHSplit,
+      appendDiagram,
+    } = this;
 
-    // Creates menubar
-    this.menubar = chromeless
+    setMenubar();
+    appendMenubar();
+
+    setSidebar();
+    appendSidebar();
+
+    setFormatSidebar();
+    appendFormatSidebar();
+
+    setFooter();
+
+    appendDiagram();
+
+    appendSideFooterContainer();
+    appendTabContainer();
+
+    setToolbar();
+    appendToolbar();
+    appendHSplit();
+  }
+
+  setToolbar() {
+    // Creates toolbar
+    this.toolbar = this.editor.chromeless
       ? null
-      : this.menus.createMenubar(this.createDiv("geMenubar"));
+      : this.createToolbar(this.createDiv("geToolbar"));
+  }
 
-    if (this.menubar != null) {
-      this.menubarContainer.appendChild(menubar.container);
+  appendDiagram() {
+    this.container.appendChild(this.diagramContainer);
+  }
+
+  appendFormatSidebar() {
+    const { formatContainer } = this.ui;
+    if (this.format) {
+      this.container.appendChild(formatContainer);
     }
+  }
 
+  appendSidebar() {
+    if (this.sidebar) {
+      this.container.appendChild(this.sidebarContainer);
+    }
+  }
+
+  appendMenubar() {
+    if (this.menubar) {
+      this.menubarContainer.appendChild(this.menubar.container);
+    }
+    this.appendStatusbar();
+  }
+
+  appendStatusbar() {
+    const { statusContainer, menubarContainer } = this.ui;
     // Adds status bar in menubar
-    if (this.menubar != null) {
+    if (this.menubar) {
       this.statusContainer = this.createStatusContainer();
 
       // Connects the status bar to the editor status
@@ -46,58 +120,52 @@ export class UiDisplay extends ElementCreator {
       // Inserts into DOM
       this.container.appendChild(menubarContainer);
     }
+  }
 
-    // Creates the sidebar
-    this.sidebar = this.editor.chromeless
-      ? null
-      : this.createSidebar(this.sidebarContainer);
-
-    if (this.sidebar != null) {
-      this.container.appendChild(this.sidebarContainer);
-    }
-
-    // Creates the format sidebar
-    this.format =
-      chromeless || !formatEnabled ? null : this.createFormat(formatContainer);
-
-    if (this.format != null) {
-      this.container.appendChild(formatContainer);
-    }
-
+  setFooter() {
+    const { chromeless } = this;
     // Creates the footer
-    var footer = chromeless ? null : this.createFooter();
+    this.footer = chromeless ? null : this.createFooter();
+  }
 
-    if (footer != null) {
+  appendFooter() {
+    const { footer, ui } = this;
+    const { footerContainer } = ui;
+    if (footer) {
       this.footerContainer.appendChild(footer);
       this.container.appendChild(footerContainer);
     }
+  }
 
-    if (this.sidebar != null && this.sidebarFooterContainer) {
+  appendSideFooterContainer() {
+    if (this.sidebar && this.sidebarFooterContainer) {
       this.container.appendChild(this.sidebarFooterContainer);
     }
+  }
 
-    this.container.appendChild(this.diagramContainer);
-
-    if (this.container != null && this.tabContainer != null) {
+  appendTabContainer() {
+    if (this.container && this.tabContainer) {
       this.container.appendChild(this.tabContainer);
     }
+  }
 
-    // Creates toolbar
-    this.toolbar = this.editor.chromeless
-      ? null
-      : this.createToolbar(this.createDiv("geToolbar"));
-
-    if (this.toolbar != null) {
+  appendToolbar() {
+    if (this.toolbar) {
       this.toolbarContainer.appendChild(this.toolbar.container);
       this.container.appendChild(this.toolbarContainer);
     }
+  }
+
+  appendHSplit() {
+    const { ui, hsplit, sidebar, container } = this;
+    const { addSplitHandler, refresh } = ui;
 
     // HSplit
-    if (this.sidebar != null) {
-      this.container.appendChild(this.hsplit);
+    if (sidebar) {
+      container.appendChild(hsplit);
 
-      addSplitHandler(this.hsplit, true, 0, (value) => {
-        this.ui.hsplitPosition = value;
+      addSplitHandler(hsplit, true, 0, (value) => {
+        ui.hsplitPosition = value;
         refresh();
       });
     }
