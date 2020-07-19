@@ -1,4 +1,4 @@
-import { EditorUI } from "../..";
+import { EditorUI } from "../";
 
 describe("EditorUI", () => {
   const editor = {};

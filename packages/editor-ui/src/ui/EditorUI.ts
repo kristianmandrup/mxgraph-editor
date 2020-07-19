@@ -1,22 +1,26 @@
 import mx from "@mxgraph-app/mx";
 import resources from "@mxgraph-app/resources";
 import { Factory } from "./factory/Factory";
-import { DialogsFactory } from "./dialogs/DialogsFactory";
-import { ColorDialog } from "./dialogs/ColorDialog";
-import { DialogManager } from "./dialogs/DialogManager";
-import { UndoRedo } from "./undo/UndoRedo";
+import { UndoRedo } from "./undo";
 import { Splitter } from "./splitter";
-import { PageConfig } from "./page/PageConfig";
-import { OpenFileDialog } from "./dialogs/OpenFileDialog";
-import { ImageDialog } from "./dialogs";
-import { LinkDialog } from "./dialogs/LinkDialog";
-import { EditDataDialog } from "./dialogs/EditDataDialog";
-import { BackgroundImageDialog } from "./dialogs/BackgroundImageDialog";
+import { PageConfig } from "./page";
 import { UiDisplay } from "./display";
 import { GraphExtractor } from "./extract";
 import { Layouter } from "./layout";
-import { ScrollbarsManager } from "./scrollbars/ScrollbarsManager";
+import { ScrollbarsManager } from "./scrollbars";
 import { ErrorManager } from "./error";
+import { Destroyer } from "./destroy";
+import {
+  DialogsFactory,
+  DialogManager,
+  ColorDialog,
+  OpenFileDialog,
+  ImageDialog,
+  LinkDialog,
+  BackgroundImageDialog,
+  EditDataDialog,
+} from "./dialogs";
+
 const { mxOutline, mxClient, mxEventObject, mxPoint, mxEvent, mxUtils } = mx;
 
 const { urlParams } = resources;
@@ -323,19 +327,7 @@ export class EditorUI {
   /**
    * Displays a print dialog.
    */
-  showDialog(
-    opts: any = {}
-    // elt,
-    // w,
-    // h,
-    // modal,
-    // closable,
-    // onClose?,
-    // noScroll?,
-    // transparent?,
-    // onResize?,
-    // ignoreBgClick?
-  ) {
+  showDialog(opts: any = {}) {
     this.editor.graph.tooltipHandler.hideTooltip();
 
     if (this.dialogs == null) {
@@ -343,18 +335,6 @@ export class EditorUI {
     }
 
     this.dialog = this.dialogFactory.createDialog(opts);
-    //   this,
-    //   elt,
-    //   w,
-    //   h,
-    //   modal,
-    //   closable,
-    //   onClose,
-    //   noScroll,
-    //   transparent,
-    //   onResize,
-    //   ignoreBgClick
-    // );
     this.dialogs.push(this.dialog);
   }
 
@@ -494,91 +474,7 @@ export class EditorUI {
    * Creates the keyboard event handler for the current graph and history.
    */
   destroy() {
-    if (this.editor != null) {
-      this.editor.destroy();
-      this.editor = null;
-    }
-
-    if (this.menubar != null) {
-      this.menubar.destroy();
-      this.menubar = null;
-    }
-
-    if (this.toolbar != null) {
-      this.toolbar.destroy();
-      this.toolbar = null;
-    }
-
-    if (this.sidebar != null) {
-      this.sidebar.destroy();
-      this.sidebar = null;
-    }
-
-    if (this.keyHandler != null) {
-      this.keyHandler.destroy();
-      this.keyHandler = null;
-    }
-
-    if (this.keydownHandler != null) {
-      mxEvent.removeListener(document, "keydown", this.keydownHandler);
-      this.keydownHandler = null;
-    }
-
-    if (this.keyupHandler != null) {
-      mxEvent.removeListener(document, "keyup", this.keyupHandler);
-      this.keyupHandler = null;
-    }
-
-    if (this.resizeHandler != null) {
-      mxEvent.removeListener(window, "resize", this.resizeHandler);
-      this.resizeHandler = null;
-    }
-
-    if (this.gestureHandler != null) {
-      mxEvent.removeGestureListeners(document, this.gestureHandler, null, null);
-      this.gestureHandler = null;
-    }
-
-    if (this.orientationChangeHandler != null) {
-      mxEvent.removeListener(
-        window,
-        "orientationchange",
-        this.orientationChangeHandler
-      );
-      this.orientationChangeHandler = null;
-    }
-
-    if (this.scrollHandler != null) {
-      mxEvent.removeListener(window, "scroll", this.scrollHandler);
-      this.scrollHandler = null;
-    }
-
-    if (this.destroyFunctions != null) {
-      for (var i = 0; i < this.destroyFunctions.length; i++) {
-        this.destroyFunctions[i]();
-      }
-
-      this.destroyFunctions = null;
-    }
-
-    var c = [
-      this.menubarContainer,
-      this.toolbarContainer,
-      this.sidebarContainer,
-      this.formatContainer,
-      this.diagramContainer,
-      this.footerContainer,
-      this.chromelessToolbar,
-      this.hsplit,
-      this.sidebarFooterContainer,
-      this.layersDialog,
-    ];
-
-    for (var i = 0; i < c.length; i++) {
-      if (c[i] != null && c[i].parentNode != null) {
-        c[i].parentNode.removeChild(c[i]);
-      }
-    }
+    new Destroyer(this).destroy();
   }
 
   /**
