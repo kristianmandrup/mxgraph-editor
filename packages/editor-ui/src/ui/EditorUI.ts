@@ -3,7 +3,6 @@ import resources from "@mxgraph-app/resources";
 import { Factory } from "./factory/Factory";
 import { DialogsFactory } from "./dialogs/DialogsFactory";
 import { ColorDialog } from "./dialogs/ColorDialog";
-import { ErrorDialog } from "./dialogs/ErrorDialog";
 import { DialogManager } from "./dialogs/DialogManager";
 import { UndoRedo } from "./undo/UndoRedo";
 import { Splitter } from "./splitter";
@@ -17,15 +16,8 @@ import { UiDisplay } from "./display";
 import { GraphExtractor } from "./extract";
 import { Layouter } from "./layout";
 import { ScrollbarsManager } from "./scrollbars/ScrollbarsManager";
-const {
-  mxOutline,
-  mxClient,
-  mxEventObject,
-  mxPoint,
-  mxEvent,
-  mxUtils,
-  mxResources,
-} = mx;
+import { ErrorManager } from "./error";
+const { mxOutline, mxClient, mxEventObject, mxPoint, mxEvent, mxUtils } = mx;
 
 const { urlParams } = resources;
 
@@ -73,7 +65,6 @@ export class EditorUI {
   dialogFactory: DialogsFactory;
 
   colorDialog: ColorDialog;
-  errorDialog: ErrorDialog;
   openFileDialog: OpenFileDialog;
   imageDialog: ImageDialog;
   linkDialog: LinkDialog;
@@ -100,7 +91,6 @@ export class EditorUI {
 
     // TODO: put in a dialogMap
     this.colorDialog = new ColorDialog(this);
-    this.errorDialog = new ErrorDialog(this);
     this.openFileDialog = new OpenFileDialog(this);
     this.imageDialog = new ImageDialog(this);
     this.linkDialog = new LinkDialog(this);
@@ -320,71 +310,14 @@ export class EditorUI {
    * @param {number} dx X-coordinate of the translation.
    * @param {number} dy Y-coordinate of the translation.
    */
-  handleError(resp, title, fn, invokeFnOnClose, _notFoundMessage) {
-    var e = resp != null && resp.error != null ? resp.error : resp;
-
-    if (e != null || title != null) {
-      var msg = mxUtils.htmlEntities(mxResources.get("unknownError"));
-      var btn = mxResources.get("ok");
-      title = title != null ? title : mxResources.get("error");
-
-      if (e != null && e.message != null) {
-        msg = mxUtils.htmlEntities(e.message);
-      }
-
-      invokeFnOnClose = invokeFnOnClose ? fn : null;
-      const opts = { title, msg, btn, fn, invokeFnOnClose };
-
-      this.showError(opts);
-    } else if (fn != null) {
-      fn();
-    }
-  }
-
-  /**
-   * Translates this point by the given vector.
-   *
-   * @param {number} dx X-coordinate of the translation.
-   * @param {number} dy Y-coordinate of the translation.
-   */
-  showError(
-    opts: any = {}
-    // title,
-    // msg,
-    // btn,
-    // fn,
-    // retry,
-    // btn2,
-    // fn2,
-    // btn3,
-    // fn3,
-    // w,
-    // h,
-    // hide,
-    // onClose
-  ) {
-    this.errorDialog.displayErrorDialog(opts);
-    // // const $btn = btn || mxResources.get("ok");
-    // var dlg = this.dialogFactory.createErrorDialog(opts);
-    // //   this, title, msg, $btn, {
-    // //   fn,
-    // //   retry,
-    // //   btn2,
-    // //   fn2,
-    // //   hide,
-    // //   btn3,
-    // //   fn3,
-    // // });
-    // var lines = Math.ceil(msg != null ? msg.length / 50 : 1);
-    // this.showDialog(
-    //   dlg.container,
-    //   w || 340,
-    //   h || 100 + lines * 20,
-    //   true,
-    //   false,
-    //   onClose
-    // );
-    // dlg.init();
+  handleError(resp, title, fn, invokeFnOnClose, notFoundMessage) {
+    new ErrorManager(this, {
+      resp,
+      title,
+      fn,
+      invokeFnOnClose,
+      notFoundMessage,
+    }).handleError();
   }
 
   /**
