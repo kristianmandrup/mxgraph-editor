@@ -29,47 +29,73 @@ export class ElementCreator {
     this.editor = ui.editor;
   }
 
+  get chromeless() {
+    return this.editor.chromeless;
+  }
+
   /**
    * Creates the required containers.
    */
   createDivs() {
-    const { formatWidth, splitSize, editor } = this.ui;
-
     const {
       setMenubarContainer,
       setToolbarContainer,
       setFooterContainer,
       setFormatContainer,
+      setSidebarContainer,
+      setSidebarFooterContainer,
+      setHorizontalSplit,
+      setTabContainer,
+      setDiagramContainer,
     } = this;
     setMenubarContainer();
     setToolbarContainer();
     setFooterContainer();
     setFormatContainer();
+    setSidebarContainer();
+    setSidebarFooterContainer();
+    setHorizontalSplit();
+    setTabContainer();
+    setDiagramContainer();
+  }
 
-    this.sidebarContainer = this.createDiv("geSidebarContainer");
-    this.diagramContainer = this.createDiv("geDiagramContainer");
+  setTabContainer() {
+    if (this.chromeless) return;
+    this.tabContainer = this.createTabContainer();
+  }
+
+  setHorizontalSplit() {
+    const { splitSize } = this.ui;
     this.hsplit = this.createDiv("geHsplit");
     this.hsplit.setAttribute("title", mxResources.get("collapseExpand"));
-
-    // Sets static style for containers
-    this.sidebarContainer.style.left = "0px";
-
-    this.diagramContainer.style.right =
-      (this.format != null ? formatWidth : 0) + "px";
-
     this.hsplit.style.width = splitSize + "px";
+    return this;
+  }
 
+  setSidebarFooterContainer() {
     this.sidebarFooterContainer = this.createSidebarFooterContainer();
 
     if (this.sidebarFooterContainer) {
       this.sidebarFooterContainer.style.left = "0px";
     }
+  }
 
-    if (!editor.chromeless) {
-      this.tabContainer = this.createTabContainer();
-    } else {
+  setDiagramContainer() {
+    const { formatWidth } = this.ui;
+    this.diagramContainer = this.createDiv("geDiagramContainer");
+    this.diagramContainer.style.right =
+      (this.format != null ? formatWidth : 0) + "px";
+
+    if (this.chromeless) {
       this.diagramContainer.style.border = "none";
     }
+    return this;
+  }
+
+  setSidebarContainer() {
+    this.sidebarContainer = this.createDiv("geSidebarContainer");
+    this.sidebarContainer.style.left = "0px";
+    return this;
   }
 
   setMenubarContainer() {
