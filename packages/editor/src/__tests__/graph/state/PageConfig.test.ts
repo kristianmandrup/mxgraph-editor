@@ -1,7 +1,7 @@
 import { GraphStateReader, PageConfig } from "../../../";
 import { editor } from "../../helpers";
 
-describe("EditorGraph", () => {
+describe("PageConfig", () => {
   let instance;
   const sr = new GraphStateReader(editor);
   beforeEach(() => {

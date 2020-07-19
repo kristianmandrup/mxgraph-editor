@@ -51,11 +51,18 @@ export class GraphXmlSetter extends BaseGraphXml {
   }
 
   setGraphModelNode() {
-    const { node, eg, notifyResetGraphView, dec, graph } = this;
-    const { readGraphState, updateGraphComponents } = eg;
+    const { node, notifyResetGraphView, executeGraphModelTransaction } = this;
     if (node.nodeName !== "mxGraphModel") return;
-    graph.model.beginUpdate();
 
+    executeGraphModelTransaction();
+    notifyResetGraphView();
+    return true;
+  }
+
+  executeGraphModelTransaction() {
+    const { node, eg, dec, graph } = this;
+    const { readGraphState, updateGraphComponents } = eg;
+    graph.model.beginUpdate();
     try {
       graph.model.clear();
       graph.view.scale = 1;
@@ -65,9 +72,6 @@ export class GraphXmlSetter extends BaseGraphXml {
     } finally {
       graph.model.endUpdate();
     }
-
-    notifyResetGraphView();
-    return true;
   }
 
   setRootNode() {

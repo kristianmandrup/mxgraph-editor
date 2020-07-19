@@ -1,4 +1,4 @@
-import { EditorGraph } from "../../../editor";
+import { EditorGraph } from "../../";
 import { editor } from "../helpers";
 
 describe("EditorGraph", () => {
@@ -18,7 +18,7 @@ describe("EditorGraph", () => {
   });
 
   describe("methods", () => {
-    describe("createGraphInstance(_model, _themes)", () => {
+    describe("createGraphInstance(model, themes)", () => {
       it("creates Graph instance", () => {
         const model = {},
           themes = ["default"];

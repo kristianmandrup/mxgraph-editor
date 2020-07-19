@@ -2,6 +2,7 @@ import { Editor } from "../Editor";
 import mx from "@mxgraph-app/mx";
 import { GraphStateReader } from "./state/GraphStateReader";
 import { GraphXml } from "./xml";
+import { GraphResetter } from "./reset";
 const { mxEventObject, mxGraph } = mx;
 
 interface IGraph {
@@ -55,29 +56,14 @@ export class EditorGraph {
   }
 
   /**
-   * Sets the XML node for the current diagram.
+   * resets graph
    */
   resetGraph() {
-    const { urlParams, graph, isChromelessView } = this.editor;
-    const { updateGraphComponents } = this;
+    this.createGraphResetter().reset();
+  }
 
-    graph.gridEnabled = !isChromelessView() || urlParams["grid"] == "1";
-    graph.graphHandler.guidesEnabled = true;
-    graph.setTooltips(true);
-    graph.setConnectable(true);
-    graph.foldingEnabled = true;
-    graph.scrollbars = graph.defaultScrollbars;
-    graph.pageVisible = graph.defaultPageVisible;
-    graph.pageBreaksVisible = graph.pageVisible;
-    graph.preferPageSize = graph.pageBreaksVisible;
-    graph.background = null;
-    graph.pageScale = mxGraph.prototype.pageScale;
-    graph.pageFormat = mxGraph.prototype.pageFormat;
-    graph.currentScale = 1;
-    graph.currentTranslate.x = 0;
-    graph.currentTranslate.y = 0;
-    updateGraphComponents();
-    graph.view.setScale(1);
+  createGraphResetter() {
+    return new GraphResetter(this);
   }
 
   /**

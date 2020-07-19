@@ -7,25 +7,25 @@ export class GraphXml extends BaseGraphXml {
   graphXmlSetter: any;
 
   constructor(eg) {
-    super(eg, eg.editor);
+    super(eg);
     const { createGraphXmlGetter, createGraphXmlSetter } = this;
     this.graphXmlGetter = createGraphXmlGetter();
     this.graphXmlSetter = createGraphXmlSetter();
   }
 
   createGraphXmlGetter() {
-    return new GraphXmlGetter(this.eg, this.editor);
+    return new GraphXmlGetter(this.eg);
   }
 
   createGraphXmlSetter() {
-    return new GraphXmlSetter(this.eg, this.editor);
+    return new GraphXmlSetter(this.eg);
   }
 
   setGraphXml(node) {
     return this.graphXmlSetter.setGraphXml(node);
   }
 
-  getGraphXml(node) {
-    return this.graphXmlGetter.getGraphXml(node);
+  getGraphXml(ignoreSelection = true) {
+    return this.graphXmlGetter.getGraphXml(ignoreSelection);
   }
 }

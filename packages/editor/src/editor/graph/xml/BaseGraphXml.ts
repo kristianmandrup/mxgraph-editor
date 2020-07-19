@@ -2,9 +2,9 @@ export class BaseGraphXml {
   eg: any;
   editor: any;
 
-  constructor(eg: any, editor: any) {
+  constructor(eg: any) {
     this.eg = eg;
-    this.editor = editor;
+    this.editor = eg.editor;
   }
 
   get graph() {

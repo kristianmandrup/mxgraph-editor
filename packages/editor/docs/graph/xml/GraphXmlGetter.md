@@ -1,0 +1,3 @@
+# GraphXmlGetter
+
+- `getGraphXml(node)`
