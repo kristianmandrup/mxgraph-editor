@@ -1,12 +1,22 @@
 import { Editor } from "../Editor";
-import mx from "@mxgraph-app/mx";
-const { mxEvent } = mx;
+
+import { LinkOpener } from "./LinkOpener";
 
 export class NewEdit {
   editor: Editor;
+  linkOpener: LinkOpener;
 
   constructor(editor: Editor) {
     this.editor = editor;
+    this.linkOpener = this.createLinkOpener();
+  }
+
+  get graph() {
+    return this.editor.graph;
+  }
+
+  createLinkOpener() {
+    return new LinkOpener(this.editor);
   }
 
   editAsNew(xml, title) {
@@ -16,17 +26,23 @@ export class NewEdit {
     fn(params, xml);
   }
 
-  get isClientMode() {
+  isModernBrowser() {
     const { documentMode } = this.editor;
-    return (
-      typeof window.postMessage !== "undefined" &&
-      (documentMode == null || documentMode >= 10)
-    );
+    return documentMode == null || documentMode >= 10;
+  }
+
+  get isClientMode() {
+    return typeof window.postMessage !== "undefined" && this.isModernBrowser;
+  }
+
+  createParams(title) {
+    return title != null ? "?title=" + encodeURIComponent(title) : "";
   }
 
   paramsFor(title) {
+    const { createParams } = this;
     const { urlParams } = this.editor;
-    let params = title != null ? "?title=" + encodeURIComponent(title) : "";
+    let params = createParams(title);
     if (urlParams["ui"] != null) {
       params += (params.length > 0 ? "&" : "?") + "ui=" + urlParams["ui"];
     }
@@ -34,23 +50,10 @@ export class NewEdit {
   }
 
   openLinkClientMode(params, xml) {
-    const { getEditBlankUrl, graph } = this.editor;
-    var wnd: any = null;
-
-    var l = (evt) => {
-      if (evt.data == "ready" && evt.source == wnd) {
-        mxEvent.removeListener(window, "message", l);
-        wnd.postMessage(xml, "*");
-      }
-    };
-
-    mxEvent.addListener(window, "message", l);
-    params = params + (params.length > 0 ? "&" : "?") + "client=1";
-    wnd = graph.openLink(getEditBlankUrl(params), null, true);
+    return this.linkOpener.openLinkClientMode(params, xml);
   }
 
   openLink(p, xml) {
-    const { graph, getEditBlankUrl } = this.editor;
-    graph.openLink(getEditBlankUrl(p) + "#R" + encodeURIComponent(xml));
+    return this.linkOpener.openLink(p, xml);
   }
 }
