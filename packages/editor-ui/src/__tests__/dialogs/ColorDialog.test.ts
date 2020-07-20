@@ -1,5 +1,4 @@
-import { ColorDialog } from "../../../ui";
-import { EditorUI } from "../../..";
+import { EditorUI, ColorDialog } from "../../";
 
 describe("ColorDialog", () => {
   const editor = {};

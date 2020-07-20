@@ -1,3 +1,4 @@
+export * from "./destroy";
 export * from "./dialogs";
 export * from "./display";
 export * from "./extract";
